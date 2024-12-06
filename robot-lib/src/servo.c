@@ -27,6 +27,7 @@ void servo_set_angle(int angle) {
     if (angle > 180) angle = 180; // prevent going past max angle
     if (angle < 0) angle = 0;
     // pulse widths in microseconds
-    int pulse_width = (float)(angle * (MAX_PULSE_WIDTH - MIN_PULSE_WIDTH) / 180 + MIN_PULSE_WIDTH);
-    pwm_set_gpio_level(SERVO_PIN, pulse_width);
+    int pulse_width_deg = (float)(angle * (MAX_PULSE_WIDTH - MIN_PULSE_WIDTH) / 180 + MIN_PULSE_WIDTH);
+    int duty = (pulse_width_deg * WRAP_VAL) / 20000; // 20000 is 20ms (period of 50Hz)
+    pwm_set_gpio_level(SERVO_PIN, duty);
 }

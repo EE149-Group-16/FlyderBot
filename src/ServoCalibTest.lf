@@ -9,26 +9,38 @@ import Servo from "lib/Servo.lf"
 
 main reactor {
     servo = new Servo()
-    timer t(0, 200 ms)
+    timer t(0, 500 ms)
+    timer t1(0) // one time timer
+    timer t2(3 s) 
     state maxAngle: int = 180
     state angleInput: int = 0
     state rising: bool = true
 
-    reaction (t) -> servo.angle {=
-        if (self->rising) {
-            if (self->angleInput < 180) {
-                lf_set(servo.angle, self->angleInput);
-                self->angleInput++;
-            } else {
-                self->rising = false;
-            }
-        } else {
-            if (self->angleInput > 0) {
-                lf_set(servo.angle, self->angleInput);
-                self->angleInput--;
-            } else {
-                self->rising =true;
-            }
-        }
+    reaction(t1) -> servo.angle {=
+        lf_set(servo.angle, 3);
     =}
+
+    reaction(t2) -> servo.angle {=
+        lf_set(servo.angle, 90);
+    
+    =}
+
+    // reaction (t) -> servo.angle {=
+    //     if (self->rising) {
+    //         if (self->angleInput < 160) {
+    //             lf_set(servo.angle, self->angleInput);
+    //             self->angleInput++;
+    //         } else {
+    //             self->rising = false;
+    //         }
+    //     } else {
+    //         if (self->angleInput > 0) {
+    //             lf_set(servo.angle, self->angleInput);
+    //             self->angleInput--;
+
+    //         } else {
+    //             self->rising =true;
+    //         }
+    //     }
+    // =}
 }
