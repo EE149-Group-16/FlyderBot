@@ -9,6 +9,8 @@ add_library(robot
   src/motors.c
 #  src/rgb_leds.c
   src/sh1106.c
+  src/servo.c
+  src/propeller.c
 )
 pico_generate_pio_header(robot
   ${CMAKE_CURRENT_LIST_DIR}/qtr_sensor_counter.pio

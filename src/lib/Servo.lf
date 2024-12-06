@@ -1,0 +1,22 @@
+target C {
+    single-threaded: true,
+    files: ["../../robot-lib/"],
+    cmake-include: ["../../robot-lib/robot-lib.txt"],
+    platform: "RP2040"
+}
+
+preamble {=
+    #include <servo.h>
+=}
+
+reactor Servo {
+    input angle: int
+
+    reaction(startup) {=
+        servo_init();
+    =}
+
+    reaction set_angle(angle) {=
+        servo_set_angle(angle);
+    =}
+}
