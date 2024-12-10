@@ -24,14 +24,14 @@ void servo_init() {
 
 }
 
-void servo_set_angle(int angle) {
+void servo_set_angle(uint16_t angle) {
     /*
     if (angle > 180) angle = 180; // prevent going past max angle
     if (angle < 0) angle = 0;
     // pulse widths in microseconds
     int pulse_width_deg = (angle * ((MAX_PULSE_WIDTH - MIN_PULSE_WIDTH) / 180)+ MIN_PULSE_WIDTH);
     */
-    printf("AGnel inside func, %d", angle);
+    // printf("AGnel inside func, %d", angle);
     int level = (1 * angle); // 20000 is 20ms (period of 50Hz)
     pwm_set_gpio_level(SERVO_PIN, angle);
     sleep_ms(20);

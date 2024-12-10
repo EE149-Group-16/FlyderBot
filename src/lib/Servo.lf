@@ -17,7 +17,7 @@ reactor Servo {
     =}
 
     reaction (angle) {=
-        printf("SErvo.lf: %d", angle->value);
+        // printf("SErvo.lf: %d", angle->value);
 
         servo_set_angle(angle->value);
     =}

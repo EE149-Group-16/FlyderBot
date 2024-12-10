@@ -16,4 +16,4 @@
 
 void servo_init();
 
-void servo_set_angle();
+void servo_set_angle(uint16_t angle);

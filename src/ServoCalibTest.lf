@@ -11,21 +11,21 @@ main reactor {
     servo = new Servo()
     timer t(0, 500 ms)
     timer t1(3 s, 2 s) // one time timer
-    timer t2(2 s, 2 s) 
+    timer t2(6 s, 2 s) 
     state maxAngle: int = 180
     state angleInput: uint16_t
     state rising: bool = true
 
-    reaction(t1) -> servo.angle {=
-        lf_set(servo.angle, 2425);
-    =}
+    // reaction(t1) -> servo.angle {=
+    //     lf_set(servo.angle, 2425);
+    // =}
     reaction (startup) {=
-        self->angleInput = 2100;
+        self->angleInput = 2500;
     =}
     reaction(t2) -> servo.angle {=
-
-    //    self->angleInput = self->angleInput + 100;
-        lf_set(servo.angle, 700);
+        self->angleInput = self->angleInput -25;
+        lf_set(servo.angle, self->angleInput);
+        printf("Current Angle: %d", self->angleInput);
   
     
     =}
