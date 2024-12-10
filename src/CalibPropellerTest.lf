@@ -1,0 +1,45 @@
+target C {
+    platform: "RP2040",
+    // files: ["../../robot-lib"],
+    // cmake-include: ["../../robot-lib/robot-lib.txt"],
+    single-threaded: true
+}
+
+import Propeller from "lib/Propeller.lf"
+
+main reactor {
+    propeller = new Propeller()
+    timer t(6 s, 2 s)
+    state rising: bool = true
+    state power: uint16_t
+
+    reaction (startup) {=
+        self->power = 1.0;
+    =}
+    reaction(t) -> propeller.power {=
+        if (self-> power > 0) {
+            self->power -= .1;
+            lf_set(propeller.power, self->power);
+            // printf("Current Power: %d", self->power);
+        }
+    =}
+
+    // reaction (t) -> servo.angle {=
+    //     if (self->rising) {
+    //         if (self->angleInput < 160) {
+    //             lf_set(servo.angle, self->angleInput);
+    //             self->angleInput++;
+    //         } else {
+    //             self->rising = false;
+    //         }
+    //     } else {
+    //         if (self->angleInput > 0) {
+    //             lf_set(servo.angle, self->angleInput);
+    //             self->angleInput--;
+
+    //         } else {
+    //             self->rising =true;
+    //         }
+    //     }
+    // =}
+}

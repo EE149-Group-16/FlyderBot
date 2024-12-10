@@ -1,0 +1,23 @@
+target C {
+    single-threaded: true,
+    files: ["../../robot-lib/"],
+    cmake-include: ["../../robot-lib/robot-lib.txt"],
+    platform: "RP2040"
+}
+
+preamble {=
+    #include <propeller.h>
+=}
+
+reactor Propeller {
+    input power: uint16_t
+
+    reaction(startup) {=
+        propeller_init();
+    =}
+
+    reaction (power) {=
+        // printf("SErvo.lf: %d", angle->value);
+        propeller_set_power(power->value);
+    =}
+}
