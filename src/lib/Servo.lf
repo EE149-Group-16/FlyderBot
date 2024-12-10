@@ -10,13 +10,15 @@ preamble {=
 =}
 
 reactor Servo {
-    input angle: int
+    input angle: uint16_t
 
     reaction(startup) {=
         servo_init();
     =}
 
-    reaction set_angle(angle) {=
-        servo_set_angle(angle);
+    reaction (angle) {=
+        printf("SErvo.lf: %d", angle->value);
+
+        servo_set_angle(angle->value);
     =}
 }

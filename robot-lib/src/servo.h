@@ -3,16 +3,16 @@
 
 #define SERVO_PIN 3
 
-#define CLOCK_DIVIDER 64.0f // chosen to keep the wrap val smaller
-#define WRAP_VAL 0x0FFF // for 50Hz
+#define CLOCK_DIVIDER 125 // chosen to keep the wrap val smaller
+#define WRAP_VAL 19999 // for 50Hz
 /**
  * Want a 50 Hz PWM Signal
  * RP2040 default clock speed set at 125 MHz
  * Must divide clock speed to produce desired period 20 ms
  * PWM Freq 50 Hz = Clock Freq / (Clock Divider * (Wrap Val + 1))
 */
-#define MAX_PULSE_WIDTH 2000
-#define MIN_PULSE_WIDTH 1000
+#define MAX_PULSE_WIDTH 2
+#define MIN_PULSE_WIDTH 1
 
 void servo_init();
 

@@ -10,18 +10,23 @@ import Servo from "lib/Servo.lf"
 main reactor {
     servo = new Servo()
     timer t(0, 500 ms)
-    timer t1(0) // one time timer
-    timer t2(3 s) 
+    timer t1(3 s, 2 s) // one time timer
+    timer t2(2 s, 2 s) 
     state maxAngle: int = 180
-    state angleInput: int = 0
+    state angleInput: uint16_t
     state rising: bool = true
 
     reaction(t1) -> servo.angle {=
-        lf_set(servo.angle, 3);
+        lf_set(servo.angle, 2425);
     =}
-
+    reaction (startup) {=
+        self->angleInput = 2100;
+    =}
     reaction(t2) -> servo.angle {=
-        lf_set(servo.angle, 90);
+
+    //    self->angleInput = self->angleInput + 100;
+        lf_set(servo.angle, 700);
+  
     
     =}
 
