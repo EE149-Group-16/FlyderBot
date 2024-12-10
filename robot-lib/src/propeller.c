@@ -26,7 +26,16 @@ void propeller_init() {
 void propeller_set_power(uint16_t power_level) {
     // power_level is btwn 0 and 1.0
     // specs say pwm btwn 0 and max throttle is 1ms to 2ms. set in propeller.h
-    uint16_t level = power_level* ((MAX_PW - MIN_PW)/100) + MIN_PW
-    pwm_set_gpio_level(PROPELLER_PIN, level);
-    sleep_ms(20);
+    // uint16_t level = power_level* ((MAX_PW - MIN_PW)/100) + MIN_PW;
+    // pwm_set_gpio_level(PROPELLER_PIN, level);
+
+    // ARMING SEQUENCE
+    pwm_set_gpio_level(PROPELLER_PIN, 1800);
+    sleep_ms(500);
+    pwm_set_gpio_level(PROPELLER_PIN, 1500); // THROTTLE AT ZERO
+    sleep_ms(500);
+
+    // ACTUAL VALUE
+    pwm_set_gpio_level(PROPELLER_PIN, 1800);
+    // sleep_ms(20);
 }

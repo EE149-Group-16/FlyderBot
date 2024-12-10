@@ -17,11 +17,13 @@ main reactor {
         self->power = 1.0;
     =}
     reaction(t) -> propeller.power {=
-        if (self-> power > 0) {
-            self->power -= .1;
-            lf_set(propeller.power, self->power);
-            // printf("Current Power: %d", self->power);
-        }
+        lf_set(propeller.power, 1500);
+
+        // if (self-> power > 0) {
+        //     self->power -= .1;
+        //     lf_set(propeller.power, self->power);
+        //     // printf("Current Power: %d", self->power);
+        // }
     =}
 
     // reaction (t) -> servo.angle {=
