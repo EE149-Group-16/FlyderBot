@@ -1,0 +1,36 @@
+
+
+target C {
+    platform: {
+      name: "rp2040",
+      board: "pololu_3pi_2040_robot"
+    },
+    single-threaded: true,
+}
+
+import Accelerometer from "IMU.lf"
+
+  preamble {=
+    #include <hardware/gpio.h>
+    #include <math.h>
+  =}
+  reactor Tilt {
+    a = new Accelerometer();
+
+    input trigger: bool;
+
+    output pitch: float;
+    output roll: float;
+
+    reaction(trigger) -> a.trigger {=
+        lf_set(a.trigger, true);
+    =}
+
+    reaction(a.x, a.y, a.z) -> pitch, roll{=
+
+        lf_set(pitch, atan2((a.x->value), sqrt(pow(a.z->value, 2) + pow(a.y->value, 2))) *180/M_PI);
+        lf_set(roll, -atan2((a.y->value), sqrt(pow(a.z->value, 2) + pow(a.x->value, 2))) *180/M_PI);
+        
+        
+    =}
+}

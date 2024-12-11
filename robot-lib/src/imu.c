@@ -14,8 +14,8 @@ const uint8_t fs_acc = 0b00; // +- 2g
 const uint8_t fs_gyro = 0b110; // +- 2000 dps
 
 // Sensitivity Multipliers 
-const float sen_acc = 0.061; // mg/LSB 
-const float sen_gyro = 70; // mdps/LSB
+const float sen_acc = 16384.0; // mg/LSB 
+const float sen_gyro = 131.0; // mdps/LSB
 
 uint imu_init(imu_inst_t* imu_inst) {
     uint8_t w_cmd;
@@ -42,7 +42,7 @@ uint imu_init(imu_inst_t* imu_inst) {
     // keep bus control
     i2c_write_blocking(i2c0, _IMU_ADDR, &w_cmd, 1, true);
     i2c_read_blocking(i2c0, _IMU_ADDR, &r_buf, 1, false);
-    imu_inst->status = (r_buf == 0x6C);
+    imu_inst->status = (r_buf == 0x68);
     
     if (!imu_inst->status) {
         return -1;
