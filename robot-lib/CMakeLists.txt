@@ -9,6 +9,7 @@ add_library(robot
   src/motors.c
 #  src/rgb_leds.c
   src/sh1106.c
+  src/encoder.c
   src/servo.c
   src/propeller.c
 )
