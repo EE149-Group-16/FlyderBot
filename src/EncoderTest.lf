@@ -1,0 +1,31 @@
+target C {
+    platform: "RP2040",
+    // files: ["../../robot-lib"],
+    // cmake-include: ["../../robot-lib/robot-lib.txt"],
+    single-threaded: true
+}
+
+import Encoders from "lib/Encoders.lf"
+
+main reactor {
+    encoders = new Encoders()
+    timer t1(3 s, 2 s) // one time timer
+    timer t2(6 s, 4 s) 
+    timer t(0, 3000 ms)
+
+    state position1: uint16_t
+
+    reaction(t) -> encoders.trigger  {=
+          //printf("check\n");
+        lf_set(encoders.trigger, true);
+
+    =}
+
+    reaction(encoders.right, encoders.left)  {=
+       printf("SEncoder: %d\n", encoders.right->value);
+       printf("SEncoder: %d\n", encoders.left->value);
+
+       
+
+    =}
+}
