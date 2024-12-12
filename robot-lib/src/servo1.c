@@ -5,7 +5,7 @@
  * lfc -r ~/lib -r ~/lib2 your_program.lfc
 */
 
-#include <servo.h>
+#include <servo1.h>
 #include <pico/stdlib.h>
 #include <hardware/pwm.h>
 
@@ -24,17 +24,17 @@ void servo_init() {
 
 }
 
+// void servo_set_angle(uint16_t angle) {
+//     // CODE FOR TESTING WHEN TAKING IN PULSE WIDTH, NOT ANGLE
+//     pwm_set_gpio_level(SERVO_PIN, angle);
+//     sleep_ms(20);
+// }
+
 void servo_set_angle(uint16_t angle) {
-    /*
     if (angle > 180) angle = 180; // prevent going past max angle
     if (angle < 0) angle = 0;
-    // pulse widths in microseconds
-    int pulse_width_deg = (angle * ((MAX_PULSE_WIDTH - MIN_PULSE_WIDTH) / 180)+ MIN_PULSE_WIDTH);
-    */
-    // printf("AGnel inside func, %d", angle);
-    int level = (1 * angle); // 20000 is 20ms (period of 50Hz)
-    pwm_set_gpio_level(SERVO_PIN, angle);
-    sleep_ms(20);
-
-    //pwm_set_enabled(pwm_gpio_to_slice_num(SERVO_PIN), true);
+    int pulse_width = angle * ((MAX_PULSE_WIDTH - MIN_PULSE_WIDTH) / 180) + MIN_PULSE_WIDTH;
+    // printf("pulse_width inside func, %d, pulse_width);
+    // printf("angle inside func, %d", angle")
+    pwm_set_gpio_level(SERVO_PIN, pulse_width);
 }

@@ -11,8 +11,8 @@
  * Must divide clock speed to produce desired period 20 ms
  * PWM Freq 50 Hz = Clock Freq / (Clock Divider * (Wrap Val + 1))
 */
-#define MAX_PULSE_WIDTH 2
-#define MIN_PULSE_WIDTH 1
+#define MAX_PULSE_WIDTH 2725 // FOR SERVO #3
+#define MIN_PULSE_WIDTH 500 // FOR SERVO #3
 
 void servo_init();
 

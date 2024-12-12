@@ -6,7 +6,7 @@ target C {
 }
 
 preamble {=
-    #include <servo.h>
+    #include <servo1.h>
 =}
 
 reactor Servo {
