@@ -11,6 +11,7 @@ add_library(robot
   src/sh1106.c
   src/servo.c
   src/propeller.c
+  src/hc_sr04.c
 )
 pico_generate_pio_header(robot
   ${CMAKE_CURRENT_LIST_DIR}/qtr_sensor_counter.pio
@@ -28,4 +29,6 @@ target_link_libraries(robot
   hardware_pwm
   hardware_spi
   hardware_i2c
+  hardware_timer
+  hardware_gpio
 )
