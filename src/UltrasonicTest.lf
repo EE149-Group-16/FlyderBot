@@ -1,0 +1,29 @@
+target C {
+    platform: "RP2040",
+    // files: ["../../robot-lib"],
+    // cmake-include: ["../../robot-lib/robot-lib.txt"],
+    single-threaded: true
+}
+
+import Ultrasonic from "lib/Ultrasonic.lf"
+
+main reactor {
+    u = new Ultrasonic()
+    timer t(0, 2000 ms)
+    timer t2(100 ms, 2000 ms)
+
+    reaction(t) -> u.trigger {=
+        lf_set(u.trigger, true);
+    =}
+    reaction(t2) -> u.get_value {=
+        lf_set(u.get_value, true);
+    =}
+
+    reaction(u.left) {=
+        printf("left: %2.4f\n", u.left->value);
+    =}
+
+    reaction(u.right) {=
+        printf("right: %2.4f\n");
+    =}
+}

@@ -9,33 +9,27 @@ preamble {=
     #include <hc_sr04.h>
 =}
 
-reactor Accelerometer {
+reactor Ultrasonic {
     input trigger: bool
+    input get_value: bool
     state hc_sr04_left: HC_SR04_t*
     state hc_sr04_right: HC_SR04_t*
     output right: float
     output left: float
-    timer t(0, 50 ms)
-    state triggered: bool = false
     
 
     reaction(startup) {=
-        self->left = HC_SR04_init(2, 3);
-        self->right = HC_SR04_init(4, 5);
+        self->hc_sr04_left = HC_SR04_init(2, 3);
+        self->hc_sr04_right = HC_SR04_init(4, 5);
     =}
 
     reaction (trigger) {=
         HC_SR04_send_trigger_pulse(self->hc_sr04_left);
         HC_SR04_send_trigger_pulse(self->hc_sr04_right);
-        self->triggered = true;
     =}
 
-    reaction (t) {=
-        if (self->triggered) {
-            lf_set(left, HC_SR04_get_distance(self->hc_sr04_left));
-            lf_set(right, HC_SR04_get_distance(self->hc_sr04_right));
-            self->triggered = false;            
-        }
-
+    reaction (get_value) -> left, right {=
+        lf_set(left, HC_SR04_get_distance(self->hc_sr04_left));
+        lf_set(right, HC_SR04_get_distance(self->hc_sr04_right));
     =}
 }
