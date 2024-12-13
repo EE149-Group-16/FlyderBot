@@ -28,22 +28,14 @@ propeller_t* propeller_init(uint8_t pin) {
     return propeller;
 }
 
-void propeller_arm_seq(propeller_t* prop) {
+void propeller_arm_seq(propeller_t* prop_front, propeller_t* prop_rear) {
     // ARMING SEQUENCE
-    pwm_set_chan_level(prop->slice, prop->channel, 1000*WRAP_VAL/20000); // MIN THROTTLE
+    pwm_set_chan_level(prop_front->slice, prop_front->channel, 1000*WRAP_VAL/20000); // MIN THROTTLE
+    pwm_set_chan_level(prop_rear->slice, prop_rear->channel, 1000*WRAP_VAL/20000);
     sleep_ms(10000);
 }
 
 void propeller_set_power(propeller_t* prop, uint16_t power_level) {
-
-        // power_level is btwn 0 and 1.0
-    // specs say pwm btwn 0 and max th5000rottle is 1ms to 2ms. set in propeller.h
-    // uint16_t level = power_level* ((MAX_PW - MIN_PW)/100) + MIN_PW;
-    // pwm_set_gpio_level(PROPELLER_PIN, level);
-    // pwm_set_gpio_level(PROPELLER_PIN, 1600);
-    // sleep_ms(600);
-    // pwm_set_gpio_level(PROPELLER_PIN, 1500); // THROTTLE AT ZERO
-    // sleep_ms(600);
     // // ACTUAL VALUE
     printf("Seting power to %d\n", power_level);
     pwm_set_chan_level(prop->slice, prop->channel, power_level*WRAP_VAL/20000); 

@@ -17,9 +17,8 @@ reactor Propeller {
 
     reaction(startup) {=
         self->prop_1 = propeller_init(3);
-        self->prop_2 = propeller_init(4);
-        propeller_arm_seq(self->prop_1);
-        propeller_arm_seq(self->prop_2);
+        self->prop_2 = propeller_init(11);
+        propeller_arm_seq(self->prop_1, self->prop_2);
     =}
 
     reaction (front_power) {=
