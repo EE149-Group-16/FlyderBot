@@ -24,7 +24,7 @@ typedef struct {
 } propeller_t;
 
 propeller_t* propeller_init(uint8_t pin);
-void propeller_arm_seq(propeller_t* prop);
+void propeller_arm_seq(propeller_t* prop_front, propeller_t* prop_rear);
 
 void propeller_set_power(propeller_t* prop, uint16_t power_level); // from 0 to 1.0?
 
