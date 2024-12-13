@@ -5,28 +5,37 @@ target C {
     single-threaded: true
 }
 
-// import Servo3 from "lib/Servo3.lf"
-import ServoTwo from "lib/Servo2.lf"
+import Servo3 from "lib/Servo.lf"
+import Servo2 from "lib/Servo.lf"
 
 main reactor {
-    servo = new ServoTwo()
+    servo_2 = new Servo2()
+    servo_3 = new Servo3()
     
     timer t(2 s, 2 s) 
 
     state angleInput: uint16_t
+    state angleInput2: uint16_t
     // state rising: bool = true
     // state maxAngle: int = 180
 
     reaction (startup) {=
         // self->angleInput = 2425; // FOR TESTING. Directly taking in PW
-        // self->angleInput = 180;
-        self->angleInput = 0;
+        self->angleInput = 180;
+        self->angleInput2 = 0;
+        // self->angleInput = 0;
     =}
-    reaction(t) -> servo.angle {=
-        // self->angleInput = self->angleInput - 10;
-        self->angleInput = self->angleInput + 10;
-        lf_set(servo.angle, self->angleInput);
+    reaction(t) -> servo_3.angle {=
+        self->angleInput = self->angleInput - 10;
+        // self->angleInput = self->angleInput + 10;
+        lf_set(servo_3.angle, self->angleInput);
         printf("Current Angle: %d", self->angleInput);
+    =}
+    reaction(t) -> servo_2.angle {=
+        // self->angleInput = self->angleInput - 10;
+        self->angleInput2 = self->angleInput2 + 10;
+        lf_set(servo_2.angle, self->angleInput2);
+        printf("Current Angle: %d", self->angleInput2);
     =}
 
     // reaction (t) -> servo.angle {=
