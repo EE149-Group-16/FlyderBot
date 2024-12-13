@@ -10,14 +10,23 @@ preamble {=
 =}
 
 reactor Propeller {
-    input power: uint16_t
+    input front_power: uint16_t
+    input rear_power: uint16_t
+    state prop_1: propeller_t*
+    state prop_2: propeller_t*
 
     reaction(startup) {=
-        propeller_init();
+        self->prop_1 = propeller_init(3);
+        self->prop_2 = propeller_init(4);
+        propeller_arm_seq(self->prop_1);
+        propeller_arm_seq(self->prop_2);
     =}
 
-    reaction (power) {=
-        // printf("SErvo.lf: %d", angle->value);
-        propeller_set_power(power->value);
+    reaction (front_power) {=
+        propeller_set_power(self->prop_1, front_power->value);
+    =}
+
+    reaction (rear_power) {=
+        propeller_set_power(self->prop_2, rear_power->value);
     =}
 }

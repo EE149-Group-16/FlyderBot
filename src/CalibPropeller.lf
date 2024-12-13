@@ -9,15 +9,24 @@ import Propeller from "lib/Propeller.lf"
 
 main reactor {
     propeller = new Propeller()
-    timer t(6 s, 2 s)
+    timer t(11 s, 1 s)
     state rising: bool = true
     state power: uint16_t
 
     reaction (startup) {=
-        self->power = 1.0;
+        self->power = 1000;
     =}
-    reaction(t) -> propeller.power {=
-        lf_set(propeller.power, 1500);
+    reaction(t) -> propeller.front_power {=
+        printf("Current Power: %d\n", self->power);
+        lf_set(propeller.front_power, self->power);
+        self->power+=100;
+        if (self->power > 2000) {
+            self->power = 1000;
+        }
+        
+        // sleep_ms(800);
+        // lf_set(propeller.power. 1700);
+        
 
         // if (self-> power > 0) {
         //     self->power -= .1;
