@@ -1,0 +1,30 @@
+target C {
+    platform: "RP2040",
+    // files: ["../../robot-lib"],
+    // cmake-include: ["../../robot-lib/robot-lib.txt"],
+    single-threaded: true
+}
+
+import Servo from "lib/Servo.lf"
+
+main reactor {
+    servos = new Servos()
+    timer t(0, 500 ms)
+
+    state maxAngle: int = 180
+    state angleInput: uint16_t
+    state rising: bool = true
+
+    reaction (startup) -> servos.front_angle, servos.rear_angle {=
+        lf_set(servos.front_angle, 60);
+        lf_set(servos.rear_angle, 120);
+        self->angleInput = 2500;
+    =}
+    reaction(t) -> servo.angle {=
+        self->angleInput = self->angleInput -25;
+        lf_set(servo.angle, self->angleInput);
+        printf("Current Angle: %d", self->angleInput);
+  
+    
+    =}
+}
