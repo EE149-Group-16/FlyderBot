@@ -1,0 +1,38 @@
+target C {
+    threaded: true,
+    files: ["../../robot-lib/"],
+    cmake-include: ["../../robot-lib/robot-lib.txt"],
+    platform: "RP2040"
+}
+
+preamble {=
+    #include <mpu6050.h>
+=}
+
+reactor mpu {
+    input trigger: uint16_t
+    output pitch: float
+    output roll: float
+   // timer t(0 s, 250 ms)
+    state mpu: mpu6050_t*
+    reaction(startup) {=
+        self->mpu = mpu6050_init(4,5);
+        mpu6050_calibrate(self->mpu);
+    =}  
+
+    reaction(trigger) {=
+       // printf("entered reaction\n");
+       // self->mpu = mpu6050_init(4,5);
+       // mpu6050_calibrate(self->mpu);
+        mpu6050_update(self->mpu);
+
+    =}
+
+    reaction (trigger) -> pitch, roll {=
+        //printf("in .lf: %d\n", self->mpu->pitch);
+
+        lf_set(pitch, self->mpu->pitch);
+        lf_set(roll, self->mpu->roll);
+
+    =}
+}

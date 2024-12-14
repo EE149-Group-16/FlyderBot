@@ -1,0 +1,31 @@
+target C {
+    platform: "RP2040",
+    // files: ["../../robot-lib"],
+    // cmake-include: ["../../robot-lib/robot-lib.txt"],
+    single-threaded: true
+}
+
+import mpu from "lib/mpu6050.lf"
+
+main reactor {
+    mpu = new mpu()
+    timer t1(3 s, 2 s) // one time timer
+    timer t2(6 s, 4 s) 
+    timer t(0, 3000 ms)
+
+    state position1: uint16_t
+
+    reaction(t) -> mpu.trigger  {=
+          //printf("check\n");
+        lf_set(mpu.trigger, true);
+
+    =}
+
+    reaction(mpu.right, mpu.left)  {=
+       printf("mpu pitch: %d\n", mpu.pitch);
+       printf("mpu roll: %d\n", mpu.roll);
+
+       
+
+    =}
+}
