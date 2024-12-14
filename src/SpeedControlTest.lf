@@ -1,0 +1,72 @@
+target C {
+    platform: "RP2040",
+    // files: ["../../robot-lib"],
+    // cmake-include: ["../../robot-lib/robot-lib.txt"],
+    single-threaded: true
+}
+
+import Propeller from "lib/Propeller.lf"
+// import Servos from "lib/Servos.lf"
+import Encoders from "lib/Encoders.lf"
+
+main reactor {
+    propeller = new Propeller()
+    // servos = new Servos()
+    encoders = new Encoders()
+
+    // timer t(12 s, 2 s)
+    // timer turn(20 s)
+    timer pid(12 s, 100 ms)
+
+    state power: uint16_t
+    // state angleServoFront: uint16_t
+    // state angleServoRear: uint16_t
+    state desiredSpeed: float
+    state encoderLeft: int
+    state encoderRight: int
+    state sumErr: float
+    state lastErr: float
+
+    reaction (startup) {=
+        self->power = 1100; // 1100 is slowest roll. 
+        // self->angleServoFront = 180;
+        // self->angleServoRear = 90;
+        self->desiredSpeed = 5.0;
+        self->sumErr = 0;
+        self->lastErr = 0;
+        printf("starting\n");
+        // lf_set(servos.front_angle, self->angleServoFront);
+        // lf_set(servos.rear_angle, self->angleServoRear);
+    =}
+
+    // TEST SPEED OF BOT based on propeller speed. 
+
+    reaction(pid) -> encoders.trigger,  propeller.rear_power {=
+        
+        lf_set(encoders.trigger, true);
+        float err = self->desiredSpeed-self->encoderLeft/0.1;
+        float diff = err - self->lastErr;
+        self->sumErr += err;
+        self->power = err*100 + self->sumErr*5 - diff*5;
+        lf_set(propeller.rear_power, self->power);
+        self->lastErr = err;
+        printf("Setting power to %d\n", self->power);
+    =}
+
+    reaction(encoders.left) {=
+        self->encoderLeft = encoders.left->value;
+    =}
+    
+    // // TEST SPEED OF BOT based on fan angle.
+    // reaction(t) -> propeller.front_power, propeller.rear_power {=
+    //     // printf("Current Power: %d\n", self->power);
+    //     lf_set(propeller.rear_power, self->power);
+    // =}
+    // // Increment Servo angles.
+    // reaction(t) -> servos.front_angle, servos.rear_angle {=
+    //     // printf("Current Angle: %d", self->angleInput);
+    //     lf_set(servos.front_angle, self->angleServoFront);
+    //     self->angleServoRear -= 10;
+    //     lf_set(servos.rear_angle, self->angleServoRear);
+    // =}
+}

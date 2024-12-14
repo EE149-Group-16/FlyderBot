@@ -13,13 +13,14 @@ main reactor {
     servos = new Servos()
 
     timer t(12 s, 2 s)
+    timer turn(20 s)
 
     state power: uint16_t
     state angleServoFront: uint16_t
     state angleServoRear: uint16_t
 
     reaction (startup) {=
-        self->power = 1500;
+        self->power = 1100; // 1100 is slowest roll. 
         self->angleServoFront = 180;
         self->angleServoRear = 90;
     =}
@@ -36,6 +37,9 @@ main reactor {
         // printf("Current Angle: %d", self->angleInput);
         lf_set(servos.front_angle, self->angleServoFront);
         lf_set(servos.rear_angle, self->angleServoRear);
+    =}
+    reaction(turn) -> servos.turning_angle {=
+        lf_set(servos.turning_angle, 90);
     =}
     
     // // TEST SPEED OF BOT based on fan angle.

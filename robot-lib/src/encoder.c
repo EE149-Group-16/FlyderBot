@@ -60,18 +60,23 @@ Encoder* encoder_init(uint gpio_a, uint gpio_b) {
     }
 
     // Initialize GPIO pins
-
+    printf("check\n");
     gpio_init(enc->gpio_a);
     gpio_set_dir(enc->gpio_a, GPIO_IN);
     gpio_disable_pulls(enc->gpio_a);
+    printf("check1\n");
 
     gpio_init(enc->gpio_b);
+    printf("line70\n");
     gpio_set_dir(enc->gpio_b, GPIO_IN);
+    printf("line72\n");
     gpio_disable_pulls(enc->gpio_b);
+    printf("check2\n");
 
     // Enable interrupts
     gpio_set_irq_enabled_with_callback(enc->gpio_a, GPIO_IRQ_EDGE_FALL, true, &encoder_callback);
     gpio_set_irq_enabled(enc->gpio_b, GPIO_IRQ_EDGE_FALL, true);
+    printf("check3\n");
 
     return enc;
 }

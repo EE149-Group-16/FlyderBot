@@ -16,13 +16,18 @@ reactor Encoders {
     output right: int32_t
     output left: int32_t
 
-    reaction(startup) {=
-        self->encoder1 = encoder_init(10, 11); // First encoder
-        self->encoder2 = encoder_init(13, 14); // Second encoder
+    reaction(trigger) {=
+    printf("Start Enc1\n");
+        // self->encoder1 = encoder_init(9, 7); // First encoder
+        printf("Start Enc2\n");
+
+        self->encoder2 = encoder_init(4, 5); // Second encoder
+        printf("end\n");
+
     =}
 
-    reaction (trigger) -> right, left {=
-        lf_set(right, self->encoder1->position);
-        lf_set(left, self->encoder2->position);
-    =}
+    // reaction (trigger) -> left {=
+    //     // lf_set(right, self->encoder1->position);
+    //     lf_set(left, self->encoder2->position);
+    // =}
 }
