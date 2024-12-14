@@ -10,7 +10,8 @@ preamble {=
 =}
 
 reactor mpu {
-    input trigger: uint16_t
+    input get_val: bool
+    input trigger: bool
     output pitch: float
     output roll: float
    // timer t(0 s, 250 ms)
