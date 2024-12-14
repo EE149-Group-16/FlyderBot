@@ -31,6 +31,7 @@ propeller_t* propeller_init(uint8_t pin) {
 void propeller_arm_seq(propeller_t* prop_front, propeller_t* prop_rear) {
     // ARMING SEQUENCE
     pwm_set_chan_level(prop_front->slice, prop_front->channel, 1000*WRAP_VAL/20000); // MIN THROTTLE
+    printf("Arming Sequence\n");
     pwm_set_chan_level(prop_rear->slice, prop_rear->channel, 1000*WRAP_VAL/20000);
     sleep_ms(10000);
 }

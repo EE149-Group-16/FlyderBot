@@ -16,8 +16,8 @@ reactor Propeller {
     state prop_2: propeller_t*
 
     reaction(startup) {=
-        self->prop_1 = propeller_init(3);
-        self->prop_2 = propeller_init(11);
+        self->prop_1 = propeller_init(5);
+        self->prop_2 = propeller_init(4);
         propeller_arm_seq(self->prop_1, self->prop_2);
     =}
 

@@ -26,7 +26,7 @@
 
 #define MAX_PW_Servo1 2725
 #define MIN_PW_Servo1 500
-#define SERVO_PIN_1 3
+#define SERVO_PIN_1 1
 
 void servo_init(int servoNum);
 void servo_set_angle(uint16_t angle, int servoNum);
