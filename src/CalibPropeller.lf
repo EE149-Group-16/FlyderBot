@@ -9,48 +9,20 @@ import Propeller from "lib/Propeller.lf"
 
 main reactor {
     propeller = new Propeller()
-    timer t(11 s, 1 s)
+    timer t(12 s, 1 s)
     state rising: bool = true
     state power: uint16_t
 
     reaction (startup) {=
         self->power = 1000;
     =}
-    reaction(t) -> propeller.front_power {=
+    reaction(t) -> propeller.front_power, propeller.rear_power {=
         printf("Current Power: %d\n", self->power);
         lf_set(propeller.front_power, self->power);
+        lf_set(propeller.rear_power, self->power);
         self->power+=100;
         if (self->power > 2000) {
             self->power = 1000;
         }
-        
-        // sleep_ms(800);
-        // lf_set(propeller.power. 1700);
-        
-
-        // if (self-> power > 0) {
-        //     self->power -= .1;
-        //     lf_set(propeller.power, self->power);
-        //     // printf("Current Power: %d", self->power);
-        // }
     =}
-
-    // reaction (t) -> servo.angle {=
-    //     if (self->rising) {
-    //         if (self->angleInput < 160) {
-    //             lf_set(servo.angle, self->angleInput);
-    //             self->angleInput++;
-    //         } else {
-    //             self->rising = false;
-    //         }
-    //     } else {
-    //         if (self->angleInput > 0) {
-    //             lf_set(servo.angle, self->angleInput);
-    //             self->angleInput--;
-
-    //         } else {
-    //             self->rising =true;
-    //         }
-    //     }
-    // =}
 }

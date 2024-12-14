@@ -20,13 +20,13 @@ reactor Servos {
         servo_init(2);
         servo_init(3);
     =}
-    reaction (servo_1_angle) {=
-        servo_set_angle(servo_1_angle->value, 1);
+    reaction (front_angle) {=
+        servo_set_angle(front_angle->value, 3);
     =}
-    reaction (servo_2_angle) {=
-        servo_set_angle(servo_2_angle->value, 2);
+    reaction (rear_angle) {=
+        servo_set_angle(rear_angle->value, 2);
     =}
-    reaction (servo_3_angle) {=
-        servo_set_angle(servo_3_angle->value, 3);
+    reaction (turning_angle) {=
+        servo_set_angle(turning_angle->value, 1);
     =}
 }

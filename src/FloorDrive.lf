@@ -1,0 +1,53 @@
+target C {
+    platform: "RP2040",
+    // files: ["../../robot-lib"],
+    // cmake-include: ["../../robot-lib/robot-lib.txt"],
+    single-threaded: true
+}
+
+import Propeller from "lib/Propeller.lf"
+import Servos from "lib/Servos.lf"
+
+main reactor {
+    propeller = new Propeller()
+    servos = new Servos()
+
+    timer t(12 s, 2 s)
+
+    state power: uint16_t
+    state angleServoFront: uint16_t
+    state angleServoRear: uint16_t
+
+    reaction (startup) {=
+        self->power = 1500;
+        self->angleServoFront = 180;
+        self->angleServoRear = 90;
+    =}
+
+    // TEST SPEED OF BOT based on propeller speed. 
+    reaction(t) -> propeller.rear_power {=
+        lf_set(propeller.rear_power, self->power);
+        // self->power += 100;
+        // printf("Current Power: %d\n", self->power);
+        // lf_set(propeller.front_power, self->power);
+
+    =}
+    reaction(t) -> servos.front_angle, servos.rear_angle {=
+        // printf("Current Angle: %d", self->angleInput);
+        lf_set(servos.front_angle, self->angleServoFront);
+        lf_set(servos.rear_angle, self->angleServoRear);
+    =}
+    
+    // // TEST SPEED OF BOT based on fan angle.
+    // reaction(t) -> propeller.front_power, propeller.rear_power {=
+    //     // printf("Current Power: %d\n", self->power);
+    //     lf_set(propeller.rear_power, self->power);
+    // =}
+    // // Increment Servo angles.
+    // reaction(t) -> servos.front_angle, servos.rear_angle {=
+    //     // printf("Current Angle: %d", self->angleInput);
+    //     lf_set(servos.front_angle, self->angleServoFront);
+    //     self->angleServoRear -= 10;
+    //     lf_set(servos.rear_angle, self->angleServoRear);
+    // =}
+}

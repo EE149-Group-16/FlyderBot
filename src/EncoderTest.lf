@@ -24,8 +24,5 @@ main reactor {
     reaction(encoders.right, encoders.left)  {=
        printf("SEncoder: %d\n", encoders.right->value);
        printf("SEncoder: %d\n", encoders.left->value);
-
-       
-
     =}
 }
