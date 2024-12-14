@@ -7,6 +7,7 @@ add_library(robot
   src/imu.c
   src/ir_sensors.c
   src/motors.c
+  src/mpu6050.c
 #  src/rgb_leds.c
   src/sh1106.c
   src/encoder.c
