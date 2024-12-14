@@ -19,23 +19,18 @@ main reactor {
     state angleServoRear: uint16_t
 
     reaction (startup) {=
-        self->power = 1400;
+        self->power = 1500;
         self->angleServoFront = 180;
         self->angleServoRear = 90;
     =}
 
     // TEST SPEED OF BOT based on propeller speed. 
-    reaction(t) -> propeller.front_power, propeller.rear_power {=
-        if (self->power = 1000) {
-            
-        }
+    reaction(t) -> propeller.rear_power {=
+        lf_set(propeller.rear_power, self->power);
+        // self->power += 100;
         // printf("Current Power: %d\n", self->power);
         // lf_set(propeller.front_power, self->power);
-        lf_set(propeller.rear_power, self->power);
-        self->power+=100;
-        if (self->power >= 1600) {
-            self->power = 1000;
-        }
+
     =}
     reaction(t) -> servos.front_angle, servos.rear_angle {=
         // printf("Current Angle: %d", self->angleInput);

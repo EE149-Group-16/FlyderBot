@@ -12,20 +12,20 @@ preamble {=
 reactor Propeller {
     input front_power: uint16_t
     input rear_power: uint16_t
-    state prop_1: propeller_t*
-    state prop_2: propeller_t*
+    state front_prop: propeller_t*
+    state rear_prop: propeller_t*
 
     reaction(startup) {=
-        self->prop_1 = propeller_init(5);
-        self->prop_2 = propeller_init(4);
-        propeller_arm_seq(self->prop_1, self->prop_2);
+        self->front_prop = propeller_init(16);
+        self->rear_prop = propeller_init(17);
+        propeller_arm_seq(self->front_prop, self->rear_prop);
     =}
 
     reaction (front_power) {=
-        propeller_set_power(self->prop_1, front_power->value);
+        propeller_set_power(self->front_prop, front_power->value);
     =}
 
     reaction (rear_power) {=
-        propeller_set_power(self->prop_2, rear_power->value);
+        propeller_set_power(self->rear_prop, rear_power->value);
     =}
 }

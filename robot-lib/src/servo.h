@@ -16,12 +16,12 @@
 //     uint32_t max_pw;
 // } servo_t;
 
-#define MAX_PW_Servo3 2725 // FOR SERVO #3
-#define MIN_PW_Servo3 500 // FOR SERVO #3
+#define MAX_PW_Servo3 500 // FOR SERVO #3
+#define MIN_PW_Servo3 2725 // FOR SERVO #3
 #define SERVO_PIN_3 3
 
-#define MAX_PW_Servo2 2725
-#define MIN_PW_Servo2 450
+#define MAX_PW_Servo2 2680
+#define MIN_PW_Servo2 400
 #define SERVO_PIN_2 2
 
 #define MAX_PW_Servo1 2725
