@@ -12,7 +12,7 @@ main reactor {
     propeller = new Propeller()
     servos = new Servos()
 
-    timer t(12 s, 2 s)
+    timer t(5 s, 3 s)
 
     state power: uint16_t
     state angleServoFront: uint16_t
@@ -20,7 +20,7 @@ main reactor {
 
     reaction (startup) {=
         self->power = 1500;
-        self->angleServoFront = 180;
+        self->angleServoFront = 0;
         self->angleServoRear = 90;
     =}
 
@@ -35,6 +35,8 @@ main reactor {
     reaction(t) -> servos.front_angle, servos.rear_angle {=
         // printf("Current Angle: %d", self->angleInput);
         lf_set(servos.front_angle, self->angleServoFront);
+        printf("SERVO AGNEL %d", self->angleServoFront);
+        self->angleServoFront += 45;
         lf_set(servos.rear_angle, self->angleServoRear);
     =}
     

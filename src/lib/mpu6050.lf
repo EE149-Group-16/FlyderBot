@@ -17,7 +17,7 @@ reactor mpu {
    // timer t(0 s, 250 ms)
     state mpu: mpu6050_t*
     reaction(startup) {=
-        self->mpu = mpu6050_init(4,5);
+        self->mpu = mpu6050_init(20,21);
         mpu6050_calibrate(self->mpu);
     =}  
 

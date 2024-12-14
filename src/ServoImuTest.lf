@@ -1,0 +1,55 @@
+target C {
+    platform: "RP2040",
+    // files: ["../../robot-lib"],
+    // cmake-include: ["../../robot-lib/robot-lib.txt"],
+    threaded: true
+}
+
+import mpu from "lib/mpu6050.lf"
+import Servos from "lib/Servos.lf"
+
+main reactor {
+    mpu = new mpu()
+    servos = new Servos()
+
+    timer t1(0 s, 1 s) // one time timer
+    timer t2(3 s, 100 ms) 
+    timer t(0, 3000 ms)
+
+    state position1: uint16_t
+    state mpu_pitch: float
+    state mpu_roll: float
+
+    state angleServoFront: uint16_t
+    state angleServoRear: uint16_t
+
+    reaction (startup) {=
+        // self->power = 1500;
+        self->angleServoFront = 0;
+        self->angleServoRear = 90;
+    =}
+    reaction(t2) -> mpu.trigger  {=
+        lf_set(mpu.trigger, true);
+
+    =}
+
+    reaction(mpu.pitch, mpu.roll) -> servos.front_angle  {=
+        
+        
+        lf_set(servos.front_angle, 180 + mpu.roll->value );
+       
+
+    =}
+
+}
+//     reaction(t2) -> servos.front_angle, servos.rear_angle {=
+//     // printf("Current Angle: %d", self->angleInput);
+//     lf_set(servos.front_angle, 90 );
+//     // self->angleServoFront += 45;
+//     // lf_set(servos.rear_angle, self->angleServoRear);
+// =}
+//     reaction(t1) {=
+//       printf("mpu pitch: %f\n", self->mpu_pitch);
+//        printf("mpu roll: %f\n", self->mpu_roll);
+//     =}
+// }
