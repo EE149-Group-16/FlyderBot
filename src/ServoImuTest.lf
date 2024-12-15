@@ -12,9 +12,9 @@ import Servos from "lib/Servos.lf"
 
 main reactor {
     mpu = new mpu()
-    servos = new Servos()
+    //servos = new Servos()
 
-    // timer t1(0 s, 1 s) // one time timer
+    timer t1(0 s, 1 s) // one time timer
     timer t2(3 s, 300 ms) 
     // timer t(0, 3000 ms)
 
@@ -27,17 +27,22 @@ main reactor {
 
     reaction (startup) {=
         // self->power = 1500;
-        self->angleServoFront = 0;
-        self->angleServoRear = 90;
+        //self->angleServoFront = 0;
+        //self->angleServoRear = 90;
     =}
     reaction(t2) -> mpu.trigger  {=
         lf_set(mpu.trigger, true);
 
     =}
+    reaction(t1) -> mpu.trigger  {=
+        printf("ROLL VAL: %f", self->mpu_roll);
 
-    reaction(mpu.pitch, mpu.roll) -> servos.front_angle, servos.rear_angle  {=
-        lf_set(servos.front_angle, 180 + mpu.roll->value );
-        lf_set(servos.rear_angle, 180 + mpu.roll->value);
+    =}
+
+    reaction(mpu.pitch, mpu.roll)   {=
+        self->mpu_roll = mpu.roll->value ;
+        //lf_set(servos.front_angle, 180 + mpu.roll->value );
+       // lf_set(servos.rear_angle, 180 + mpu.roll->value);
     =}
 
 }
