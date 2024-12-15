@@ -13,12 +13,12 @@ reactor Encoders {
     input trigger: bool
     state encoder1: Encoder*
     state encoder2: Encoder*
-    output right: int32_t
-    output left: int32_t
+    output right: int
+    output left: int
 
     reaction(startup) {=
-        self->encoder1 = encoder_init(10, 11); // First encoder
-        self->encoder2 = encoder_init(13, 14); // Second encoder
+        self->encoder1 = encoder_init(7, 8); // First encoder
+        self->encoder2 = encoder_init(12, 13); // Second encoder
     =}
 
     reaction (trigger) -> right, left {=

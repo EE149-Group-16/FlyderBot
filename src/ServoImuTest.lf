@@ -35,25 +35,26 @@ main reactor {
 
     =}
     reaction(t1) -> mpu.trigger  {=
-        printf("ROLL VAL: %f", self->mpu_roll);
+       // printf("ROLL VAL: %f", self->mpu_roll);
 
     =}
 
     reaction(mpu.pitch, mpu.roll)   {=
         self->mpu_roll = mpu.roll->value ;
+        self->mpu_pitch = mpu.pitch->value ;
         //lf_set(servos.front_angle, 180 + mpu.roll->value );
        // lf_set(servos.rear_angle, 180 + mpu.roll->value);
     =}
 
-}
+
 //     reaction(t2) -> servos.front_angle, servos.rear_angle {=
 //     // printf("Current Angle: %d", self->angleInput);
 //     lf_set(servos.front_angle, 90 );
 //     // self->angleServoFront += 45;
 //     // lf_set(servos.rear_angle, self->angleServoRear);
 // =}
-//     reaction(t1) {=
-//       printf("mpu pitch: %f\n", self->mpu_pitch);
-//        printf("mpu roll: %f\n", self->mpu_roll);
-//     =}
-// }
+    reaction(t1) {=
+      printf("mpu pitch: %f\n", self->mpu_pitch);
+       printf("mpu roll: %f\n", self->mpu_roll);
+    =}
+}
