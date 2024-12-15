@@ -48,8 +48,9 @@ Encoder* encoder_init(uint gpio_a, uint gpio_b) {
     if (enc == NULL) return NULL;
 
     enc->gpio_a = gpio_a;           // printf("enc position in intr %d\n", enc->position);
-
+    enc->gpio_b = gpio_b;
     enc->updated = false;
+    enc->position = 0;
 
     // Add the encoder to the global array
     for (int i = 0; i < MAX_ENCODERS; i++) {
