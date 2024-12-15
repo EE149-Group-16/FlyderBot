@@ -8,15 +8,19 @@ target C {
 import Propeller from "lib/Propeller.lf"
 import Servos from "lib/Servos.lf"
 import mpu from "lib/mpu6050.lf"
+import Ultrasonic from "lib/Ultrasonic.lf"
 
 main reactor {
     propeller = new Propeller()
     servos = new Servos()
     mpu = new mpu()
+    u = new Ultrasonic()
     timer t(12 s, 3 s)
     timer t_mpu(1 s, 100 ms) 
     timer stop(60 s)
     timer startPropeller(12 s)
+    timer t_u1(0, 200 ms)
+    timer t_u2(100 ms, 200 ms)
     // timer stopPropeller(20 s)
 
     state frontPower: uint16_t
@@ -44,36 +48,76 @@ main reactor {
         self-> done = false;
     =}
 
+    reaction(t_u1) -> u.trigger_l  {=
+        lf_set(u.trigger_l, true);
+    =}
+
+    reaction(t_u2) -> u.trigger_r {=
+        lf_set(u.trigger_r, true);
+    =}
+
+
     reaction(t_mpu) -> mpu.trigger{= //pulsing imu
         lf_set(mpu.trigger, true);
     =}
     
-    reaction(t_mpu) {= //ermegency stop if we got too fast
+    // reaction(t_mpu) {= //ermegency stop if we got too fast
+    //     if (self->frontPower >= 1400 || self->rearPower >= 1700) {
+    //         self->frontPower =1000 ;
+    //         self->rearPower = 1300;
+    //     }
+    // =}
+    
+
+    reaction(startPropeller) -> propeller.front_power, propeller.rear_power {=
         if (self->frontPower >= 1400 || self->rearPower >= 1700) {
             self->frontPower =1000 ;
             self->rearPower = 1300;
         }
-    =}
-    
-
-    reaction(startPropeller) -> propeller.front_power, propeller.rear_power {=
-        //lf_set(propeller.front_power, self->frontPower);
-        //lf_set(propeller.rear_power, self->rearPower);
+        lf_set(propeller.front_power, self->frontPower);
+        lf_set(propeller.rear_power, self->rearPower);
     =}
 
     reaction(mpu.roll) {= //updating our state variable for roll
         self->mpu_roll = mpu.roll->value;
-        printf("ROLL VAL: %f\n", self->mpu_roll);
+       
     =}
 
     mode FLOOR {
 
-        
+        reaction(t_mpu) -> servos.front_angle, servos.rear_angle{= //takes care of the angles       
+            lf_set(servos.front_angle, 65);
+            lf_set(servos.rear_angle, 120);
+        =}
+        reaction(t_mpu) {= //takes care of the motors 
+            self->frontPower = 1050;
+            self->rearPower = 1350;
+            
+            self->last_roll = self->mpu_roll;
+        =}
+
+        reaction(u.left) -> reset(FLOOR_WALL) {=
+             if (u.left <= 20) {
+                self->frontPower = 1020;
+                self->rearPower = 1320;
+            } else {
+                self->frontPower = 1050;
+                self->rearPower = 1350;
+            }
+            self->last_roll = self->mpu_roll;
+            if (u.left <= 7) {
+                lf_set_mode(FLOOR_WALL);
+            }
+        =}
+
+        // reaction(u.right) {=
+        //     printf("right: %2.4f\n", u.right->value);
+        // =}
     }
 
     initial mode FLOOR_WALL {
         reaction(t_mpu) -> servos.front_angle, servos.rear_angle{= //takes care of the angles 
-              int front = 160 + self->mpu_roll;
+            int front = 160 + self->mpu_roll;
             int back =90 - self->mpu_roll;
            
       
@@ -100,10 +144,10 @@ main reactor {
 
     
     mode DONE {
-        reaction(t_mpu) -> servos.front_angle, servos.rear_angle {=
-            lf_set(servos.front_angle, front);
-            lf_set(servos.rear_angle, back);
-        =}
+        // reaction(t_mpu) -> servos.front_angle, servos.rear_angle {=
+        //     lf_set(servos.front_angle, front);
+        //     lf_set(servos.rear_angle, back);
+        // =}
     }
     
 
