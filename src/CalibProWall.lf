@@ -1,0 +1,79 @@
+target C {
+    platform: "RP2040",
+    // files: ["../../robot-lib"],
+    // cmake-include: ["../../robot-lib/robot-lib.txt"],
+    single-threaded: true
+}
+
+import Propeller from "lib/Propeller.lf"
+import Servos from "lib/Servos.lf"
+
+main reactor {
+    propeller = new Propeller()
+    servos = new Servos()
+
+    timer t(12 s, 3 s)
+    timer stop(60 s)
+    // timer startPropeller(12 s)
+    // timer stopPropeller(20 s)
+
+    state frontPower: uint16_t
+
+    state rearPower: uint16_t
+    state rearAngle: uint16_t
+    state frontAngle: uint16_t
+
+    state rising: bool
+    state done: bool
+
+    reaction (startup) -> servos.front_angle, servos.rear_angle {=
+        self -> frontPower = 1300; // started at 1350 power
+        self -> rearPower = 1000;
+        self -> rearAngle = 60;
+        self -> frontAngle = 105;
+        lf_set(servos.rear_angle, self->rearAngle);
+        lf_set(servos.front_angle, self->frontAngle);
+        
+        self-> rising = true;
+        self-> done = false;
+    =}
+    reaction(t) -> propeller.front_power, propeller.rear_power {=
+        printf("Current Power: front %d back %d\n", self->frontPower, self->rearPower);
+        
+        if (self->done) {
+            lf_set(propeller.rear_power, 1000);
+            lf_set(propeller.front_power, 1000);  
+        } else if (self->rising) {
+            lf_set(propeller.rear_power, self->rearPower);
+            lf_set(propeller.front_power, self->frontPower);
+            self->rearPower += 50; 
+            self->frontPower += 50; 
+            if (self->frontPower >= 1800 && self->rearPower >= 1500) {
+                self->rising = false;
+            }
+        } else {
+            if (self->frontPower <= 1300 && self->rearPower <= 1000) {
+                self->done = true;
+            }
+            self->rearPower -= 50;
+            self->frontPower -=50;
+            lf_set(propeller.rear_power, self->rearPower);
+            lf_set(propeller.front_power, self->frontPower);       
+        }
+    =}
+    
+    // reaction(startPropeller) {=
+    //     lf_set(propeller.rear_power, 1500);
+    // =}
+    // reaction(stopPropeller) {=
+    //     lf_set(propeller.rear_power, 1000);
+    // =}
+    // reaction(t) -> servos.rear_angle, servos.front_angle {=
+    //     lf_set(servos.rear_angle, self->rearAngle);
+    //     lf_set(servos.front_angle, self->frontAngle);
+    //     // self->rearAngle -= 10;
+    // =}
+
+// NOTES
+// 1250 strong enough to push against wall but not to prop (even at 90 deg)
+}

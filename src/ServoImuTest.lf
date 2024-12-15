@@ -8,13 +8,15 @@ target C {
 import mpu from "lib/mpu6050.lf"
 import Servos from "lib/Servos.lf"
 
+// how to make less twitchy? smoother. 
+
 main reactor {
     mpu = new mpu()
     servos = new Servos()
 
-    timer t1(0 s, 1 s) // one time timer
-    timer t2(3 s, 100 ms) 
-    timer t(0, 3000 ms)
+    // timer t1(0 s, 1 s) // one time timer
+    timer t2(3 s, 300 ms) 
+    // timer t(0, 3000 ms)
 
     state position1: uint16_t
     state mpu_pitch: float
@@ -33,12 +35,9 @@ main reactor {
 
     =}
 
-    reaction(mpu.pitch, mpu.roll) -> servos.front_angle  {=
-        
-        
+    reaction(mpu.pitch, mpu.roll) -> servos.front_angle, servos.rear_angle  {=
         lf_set(servos.front_angle, 180 + mpu.roll->value );
-       
-
+        lf_set(servos.rear_angle, 180 + mpu.roll->value);
     =}
 
 }

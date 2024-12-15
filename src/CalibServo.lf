@@ -12,20 +12,21 @@ main reactor {
     
     timer t(2 s, 2 s) 
 
-    state angleInput: uint16_t
-    state angleInput2: uint16_t
+    state frontAngle: uint16_t //Servo #3
+    state rearAngle: uint16_t //Servo #2
 
     reaction (startup) {=
         // self->angleInput = 2425; // FOR TESTING. Directly taking in PW
-        self->angleInput = 180;
-        self->angleInput2 = 180;
+        self->frontAngle = 180;
+        self->rearAngle = 180;
     =}
     reaction(t) -> servos.front_angle, servos.rear_angle {=
-        self->angleInput = self->angleInput - 10;
-        self->angleInput2 = self->angleInput2 - 10;
-        lf_set(servos.front_angle, self->angleInput);
-        lf_set(servos.rear_angle, self->angleInput2);
+        self->frontAngle = self->frontAngle - 10;
+        self->rearAngle = self->rearAngle - 10;
+        lf_set(servos.front_angle, self->frontAngle);
+        lf_set(servos.rear_angle, self->rearAngle);
 
-        // printf("Current Angle: %d", self->angleInput);
+        printf("Current Angle: %d\n", self->frontAngle);
+        printf("Rear Angle: %d\n", self->rearAngle);
     =}
 }
