@@ -10,8 +10,9 @@ preamble {=
 =}
 
 reactor Ultrasonic {
-    input trigger: bool
-    input get_value: bool
+    input trigger_l: bool
+    input trigger_r: bool
+    // input get_value: bool
     state hc_sr04_left: HC_SR04_t*
     state hc_sr04_right: HC_SR04_t*
     output right: float
@@ -19,17 +20,18 @@ reactor Ultrasonic {
     
 
     reaction(startup) {=
-        self->hc_sr04_left = HC_SR04_init(2, 3);
-        self->hc_sr04_right = HC_SR04_init(4, 5);
+        self->hc_sr04_left = HC_SR04_init(14, 15);
+        self->hc_sr04_right = HC_SR04_init(10, 11);
     =}
 
-    reaction (trigger) {=
-        HC_SR04_send_trigger_pulse(self->hc_sr04_left);
-        HC_SR04_send_trigger_pulse(self->hc_sr04_right);
-    =}
-
-    reaction (get_value) -> left, right {=
+    reaction (trigger_l) -> left {=
         lf_set(left, HC_SR04_get_distance(self->hc_sr04_left));
+        HC_SR04_send_trigger_pulse(self->hc_sr04_left);
+        
+    =}
+
+    reaction (trigger_r) -> right {=
         lf_set(right, HC_SR04_get_distance(self->hc_sr04_right));
+        HC_SR04_send_trigger_pulse(self->hc_sr04_right);
     =}
 }

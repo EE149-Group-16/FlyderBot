@@ -9,14 +9,15 @@ import Ultrasonic from "lib/Ultrasonic.lf"
 
 main reactor {
     u = new Ultrasonic()
-    timer t(0, 2000 ms)
-    timer t2(100 ms, 2000 ms)
+    timer t(0, 200 ms)
+    timer t2(100 ms, 200 ms)
 
-    reaction(t) -> u.trigger {=
-        lf_set(u.trigger, true);
+    reaction(t) -> u.trigger_l  {=
+        lf_set(u.trigger_l, true);
     =}
-    reaction(t2) -> u.get_value {=
-        lf_set(u.get_value, true);
+
+    reaction(t2) -> u.trigger_r {=
+        lf_set(u.trigger_r, true);
     =}
 
     reaction(u.left) {=
@@ -24,6 +25,6 @@ main reactor {
     =}
 
     reaction(u.right) {=
-        printf("right: %2.4f\n");
+        printf("right: %2.4f\n", u.right->value);
     =}
 }
