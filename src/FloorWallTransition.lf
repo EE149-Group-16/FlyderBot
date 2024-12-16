@@ -9,12 +9,14 @@ import Propeller from "lib/Propeller.lf"
 import Servos from "lib/Servos.lf"
 import mpu from "lib/mpu6050.lf"
 import Ultrasonic from "lib/Ultrasonic.lf"
+import Encoders from "lib/Encoders.lf"
 
 main reactor {
     propeller = new Propeller()
     servos = new Servos()
     mpu = new mpu()
     u = new Ultrasonic()
+    encoders = new Encoders()
     timer t(12 s, 3 s)
     timer ptimer(0 s, 1 s);
     timer t_mpu(1 s, 50 ms) 
@@ -26,6 +28,8 @@ main reactor {
 
     timer t_u1(3000 ms, 200 ms)
     timer t_u2(3100 ms, 200 ms)
+
+    timer t_enc(15 s, 500 ms)
     // timer stopPropeller(20 s)
 
     state frontPower: uint16_t
@@ -40,11 +44,21 @@ main reactor {
     state mpu_pitch: float
 
     state last_pitch: float
+
+    state desSpeed: int
+    state encLast: int
+    state sumErr: int
+    state err: int
+
     reaction (startup) -> servos.front_angle, servos.rear_angle {=
         self -> frontPower = 1000; // started at 1350 power
         self -> rearPower = 1300;
         self -> rearAngle = 65;
         self -> frontAngle = 120;
+        self->encLast = 0;
+        self->sumErr = 0;
+        self->err = 0;
+
         lf_set(servos.rear_angle, self->rearAngle);
         lf_set(servos.front_angle, self->frontAngle);
         
@@ -64,6 +78,14 @@ main reactor {
     reaction(t_mpu) -> mpu.trigger{= //pulsing imu
         lf_set(mpu.trigger, true);
     =}
+
+    reaction(t_enc) -> encoders.trigger  {=
+    //printf("check\n");
+        lf_set(encoders.trigger, true);
+
+    =}
+
+
     
     // reaction(t_mpu) {= //ermegency stop if we got too fast
     //     if (self->frontPower >= 1400 || self->rearPower >= 1700) {
@@ -97,6 +119,7 @@ main reactor {
         =}
 
         reaction(startPropeller) -> reset(FLOOR) {=
+        
             lf_set_mode(FLOOR);
 =}
 
@@ -113,26 +136,43 @@ main reactor {
             lf_set(servos.front_angle, 65);
             lf_set(servos.rear_angle, 120);
         =}
+        reaction(encoders.right) {= //takes care of the motors 
+            self->desSpeed = 2;
+            self->err = self->desSpeed - (encoders.right->value - self->encLast);
+            self->sumErr += self->err;
+            if (self->sumErr > 50) {
+                self->sumErr = 50;
+            }else if (self->sumErr < -50) {
+                self->sumErr = -50;
+            }
+            
+            self->frontPower = 1020 + self->err*20 + self->sumErr*3;
+            self->rearPower = 1300 + self->err*20 + self->sumErr*3;
+
+            self->encLast = encoders.right->value;
+        =}
+
         reaction(t_mpu) {= //takes care of the motors 
-            self->frontPower = 1100;
-            self->rearPower = 1400;
+            // self->frontPower = 1100;
+            // self->rearPower = 1400;
             
             self->last_pitch = self->mpu_pitch;
         =}
-        reaction(u.left) -> reset(FLOOR_WALL) {=
+        reaction(u.left) -> reset(DONE) {=
             if (u.left->value < 0) {
                 
             } else if (u.left->value <= 7) {
-                lf_set_mode(FLOOR_WALL);
-                self->frontPower = 1470;
+                lf_set_mode(DONE);
+                self->frontPower = 1020;
+                self->rearPower = 1300;
             }
             else if (u.left->value <= 20) {
                 self->frontPower = 1050;
                 self->rearPower = 1350;
-            } else {
-                self->frontPower = 1050;
-                self->rearPower = 1350;
-            }
+            // } else {
+            //     self->frontPower = 1050;
+            //     self->rearPower = 1350;
+             }
             printf("Front power: %d, back power: %d\n", self->frontPower,self->rearPower);
             //printf("distance: %f\n", u.left->value);
             self->last_pitch = self->mpu_pitch;

@@ -11,7 +11,7 @@ main reactor {
     encoders = new Encoders()
     timer t1(3 s, 2 s) // one time timer
     timer t2(6 s, 4 s) 
-    timer t(0, 3000 ms)
+    timer t(0, 500 ms)
 
     state position1: uint16_t
 
@@ -22,7 +22,30 @@ main reactor {
     =}
 
     reaction(encoders.right, encoders.left)  {=
-       printf("SEncoder: %d\n", encoders.right->value);
-       printf("SEncoder: %d\n", encoders.left->value);
+       printf("Right Encoder: %d\n", encoders.right->value);
+       printf("Left Encoder: %d\n", encoders.left->value);
     =}
+
+state desSpeed: int = 5
+state sumErr: int =0
+state encLast: int=0
+state frontPower: uint16_t
+state rearPower: uint16_t
+
+reaction(encoders.right) {= //takes care of the motors 
+
+    int err = self->desSpeed - (encoders.right->value - self->encLast);
+    self->sumErr += err;
+    if (self->sumErr > 100) {
+        self->sumErr = 100;
+    }else if (self->sumErr < -100) {
+        self->sumErr = -100;
+    }
+    
+    self->frontPower = 1020 + err*20 + self->sumErr*3;
+    self->rearPower = 1300 + err*20 + self->sumErr*3;
+
+    self->encLast = encoders.right->value;
+    printf("power: %d\n", self->frontPower);
+=}
 }
