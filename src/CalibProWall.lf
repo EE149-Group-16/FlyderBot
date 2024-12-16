@@ -27,10 +27,10 @@ main reactor {
     state done: bool
 
     reaction (startup) -> servos.front_angle, servos.rear_angle {=
-        self -> frontPower = 1300; // started at 1350 power
-        self -> rearPower = 1000;
-        self -> rearAngle = 60;
-        self -> frontAngle = 105;
+        self -> frontPower = 1000; // started at 1350 power
+        self -> rearPower = 1300;
+        self -> rearAngle = 105;
+        self -> frontAngle = 65;
         lf_set(servos.rear_angle, self->rearAngle);
         lf_set(servos.front_angle, self->frontAngle);
         
@@ -46,17 +46,17 @@ main reactor {
         } else if (self->rising) {
             lf_set(propeller.rear_power, self->rearPower);
             lf_set(propeller.front_power, self->frontPower);
-            self->rearPower += 50; 
-            self->frontPower += 50; 
-            if (self->frontPower >= 1800 && self->rearPower >= 1500) {
+            self->rearPower += 10; 
+            self->frontPower += 10; 
+            if (self->frontPower >= 1100 && self->rearPower >= 1400) {
                 self->rising = false;
             }
         } else {
-            if (self->frontPower <= 1300 && self->rearPower <= 1000) {
+            if (self->frontPower <= 1000 && self->rearPower <= 1300) {
                 self->done = true;
             }
-            self->rearPower -= 50;
-            self->frontPower -=50;
+            self->rearPower -= 10;
+            self->frontPower -=10;
             lf_set(propeller.rear_power, self->rearPower);
             lf_set(propeller.front_power, self->frontPower);       
         }
