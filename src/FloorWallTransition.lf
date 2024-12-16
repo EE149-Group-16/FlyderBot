@@ -18,8 +18,12 @@ main reactor {
     timer t(12 s, 3 s)
     timer ptimer(0 s, 1 s);
     timer t_mpu(1 s, 50 ms) 
+    timer tran_timer(1 s, 100 ms) 
+
     timer stop(60 s)
-    timer startPropeller(12 s, 200 ms)
+    timer startPropeller0(3 s, 0 ms)
+    timer startPropeller(15 s, 100 ms)
+
     timer t_u1(3000 ms, 200 ms)
     timer t_u2(3100 ms, 200 ms)
     // timer stopPropeller(20 s)
@@ -35,7 +39,7 @@ main reactor {
     
     state mpu_pitch: float
 
-    state last_roll: float
+    state last_pitch: float
     reaction (startup) -> servos.front_angle, servos.rear_angle {=
         self -> frontPower = 1000; // started at 1350 power
         self -> rearPower = 1300;
@@ -70,7 +74,7 @@ main reactor {
     
 
     reaction(startPropeller) -> propeller.front_power, propeller.rear_power {=
-        if (self->frontPower >= 1400 || self->rearPower >= 1700) {
+        if (self->frontPower >= 1550 || self->rearPower >= 2100) {
             self->frontPower =1000 ;
             self->rearPower = 1300;
         }
@@ -80,20 +84,22 @@ main reactor {
     =}
 
     reaction(mpu.pitch) {= //updating our state variable for roll
+        
         self->mpu_pitch = mpu.pitch->value;
         //printf("imu roll: %f\n", self->mpu_pitch);
 
     =}
 
     initial mode {
+
+        reaction(startPropeller0) -> propeller.trigger{=
+            lf_set(propeller.trigger, true);
+        =}
+
         reaction(startPropeller) -> reset(FLOOR) {=
             lf_set_mode(FLOOR);
-        =}
-            reaction(ptimer) {=
-                    printf("In init mode\n");
-                    printf("mode react front power: %d, back power: %d\n", self->frontPower,self->rearPower);
-        
-                =}
+=}
+
     } 
     
     
@@ -107,30 +113,29 @@ main reactor {
             lf_set(servos.front_angle, 65);
             lf_set(servos.rear_angle, 120);
         =}
-        // reaction(t_mpu) {= //takes care of the motors 
-        //     self->frontPower = 1050;
-        //     self->rearPower = 1350;
+        reaction(t_mpu) {= //takes care of the motors 
+            self->frontPower = 1100;
+            self->rearPower = 1400;
             
-        //     self->last_roll = self->mpu_pitch;
-        // =}
+            self->last_pitch = self->mpu_pitch;
+        =}
         reaction(u.left) -> reset(FLOOR_WALL) {=
             if (u.left->value < 0) {
                 
             } else if (u.left->value <= 7) {
                 lf_set_mode(FLOOR_WALL);
-                self->frontPower = 1000;
-                self->rearPower = 1300;
+                self->frontPower = 1470;
             }
             else if (u.left->value <= 20) {
-                self->frontPower = 1020;
-                self->rearPower = 1320;
+                self->frontPower = 1050;
+                self->rearPower = 1350;
             } else {
-                self->frontPower = 1030;
-                self->rearPower = 1330;
+                self->frontPower = 1050;
+                self->rearPower = 1350;
             }
             printf("Front power: %d, back power: %d\n", self->frontPower,self->rearPower);
             //printf("distance: %f\n", u.left->value);
-            self->last_roll = self->mpu_pitch;
+            self->last_pitch = self->mpu_pitch;
             
         =}
 
@@ -144,29 +149,38 @@ main reactor {
             // printf("distance: %f\n", u.left->value);
             // printf("mpu pitch: %f\n", self->mpu_pitch);
         =}
-        reaction(t_mpu) -> servos.front_angle, servos.rear_angle{= //takes care of the angles 
-            int front = 160 + self->mpu_pitch;
-            int back =90 - self->mpu_pitch;
+        reaction(t_mpu) -> reset(DONE), propeller.front_power, propeller.rear_power, servos.front_angle, servos.rear_angle{= //takes care of the angles 
+            int front = 160 + 2*self->mpu_pitch;
+            int back =55 - self-> mpu_pitch;
            
       
-           
+            if (self->mpu_pitch < -45) {
+                self->frontPower = 1350;
+                self->rearPower = 1430;
+                lf_set(propeller.front_power, 1350);
+
+                lf_set(propeller.rear_power, 1430);
+                lf_set(servos.front_angle, 0);
+                lf_set(servos.rear_angle, 180);
+                lf_set_mode(DONE);
+            } else {
             lf_set(servos.front_angle, front);
             lf_set(servos.rear_angle, back);
+            }
         =}
 
-        reaction(t_mpu) {= //takes care of the motors 
-            // if (self->last_roll - self->mpu_pitch < 20){
-            //     self->frontPower += 50;
-            //     self->rearPower += 50;
-            // }
-            self->last_roll = self->mpu_pitch;
-        =}
-
-        // reaction(t_mpu) -> reset(DONE){=
-        //     if (self->mpu_pitch < -80) {
-        //         lf_set_mode(DONE);
+        // reaction(tran_timer) -> servos.front_angle, servos.rear_angle{= //takes care of the motors 
+          
+        //     if (self->mpu_pitch < -15) {
+        //         self->frontPower = 1200;
+        //         self->rearPower = 1350;
+        //         lf_set(servos.front_angle, 0);
+        //         lf_set(servos.rear_angle, 180);
         //     }
+        //     self->last_pitch = self->mpu_pitch;
         // =}
+
+       
 
 }
 

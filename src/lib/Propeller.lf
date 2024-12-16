@@ -10,12 +10,13 @@ preamble {=
 =}
 
 reactor Propeller {
+    input trigger: bool
     input front_power: uint16_t
     input rear_power: uint16_t
     state front_prop: propeller_t*
     state rear_prop: propeller_t*
 
-    reaction(startup) {=
+    reaction(trigger) {=
         self->front_prop = propeller_init(17);
         self->rear_prop = propeller_init(16);
         propeller_arm_seq(self->front_prop, self->rear_prop);
