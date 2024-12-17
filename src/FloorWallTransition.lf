@@ -224,7 +224,7 @@ main reactor {
             int back =55 - 1.5 * self-> mpu_pitch;
            
       
-            if (self->mpu_pitch < -45) {
+            if (self->mpu_pitch < -55) {
                 self->count_imu += 1;
             } else {
                     self->count_imu = 0;
