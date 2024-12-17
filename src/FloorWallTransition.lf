@@ -52,11 +52,14 @@ main reactor {
 
     state count_imu: int
 
+    state wall_height: int = 0
+    state floor_len: int = 0
+
     reaction (startup) -> servos.front_angle, servos.rear_angle {=
         self -> frontPower = 1000; // started at 1350 power
         self -> rearPower = 1300;
-        self -> rearAngle = 65;
-        self -> frontAngle = 120;
+        self -> rearAngle = 90;
+        self -> frontAngle = 90;
         self->encLast = 0;
         self->sumErr = 0;
         self->err = 0;
@@ -104,9 +107,9 @@ main reactor {
     
 
     reaction(startPropeller) -> propeller.front_power, propeller.rear_power {=
-        if (self->frontPower >= 1500 || self->rearPower >= 1800) {
-            self->frontPower =1000 ;
-            self->rearPower = 1300;
+        if (self->frontPower >= 1620 || self->rearPower >= 1900) {
+            self->frontPower =1620 ;
+            self->rearPower = 1900;
         }
         lf_set(propeller.front_power, self->frontPower);
         lf_set(propeller.rear_power, self->rearPower);
@@ -145,6 +148,7 @@ main reactor {
             lf_set(servos.rear_angle, 120);
         =}
         reaction(encoders.right) -> servos.front_angle{= //takes care of the motors 
+            int speed = (encoders.right->value - self->encLast);
             self->desSpeed = 2;
             self->err = self->desSpeed - (encoders.right->value - self->encLast);
             self->sumErr += self->err;
@@ -158,6 +162,7 @@ main reactor {
             self->rearPower = 1350 + self->err*10 + self->sumErr;
 
             self->encLast = encoders.right->value;
+            self->floor_len += speed;
         =}
 
         reaction(t_mpu) {= //takes care of the motors 
@@ -171,7 +176,7 @@ main reactor {
                 
             } else if (u.left->value <= 7) {
                 lf_set_mode(FLOOR_WALL);
-                self->rearPower = 1350;
+                self->rearPower = 1375;
             }
             else if (u.left->value <= 20) {
                 self->frontPower = 1050;
@@ -208,14 +213,14 @@ main reactor {
                 self->sumErr = -100;
             }
             // lf_set(servos.front_angle, (self->sumErr + 130)); 
-            self->frontPower = 1400 + self->err*10 + self->sumErr*2;
+            self->frontPower = 1400 + self->sumErr*3;
 
             self->encLast = encoders.right->value;
         =}
 
-        reaction(t_mpu) -> reset(DONE), propeller.front_power, propeller.rear_power, servos.front_angle, servos.rear_angle{= //takes care of the angles 
+        reaction(t_mpu) -> reset(WALL_SUCTION), propeller.front_power, propeller.rear_power, servos.front_angle, servos.rear_angle{= //takes care of the angles 
             int front = 160 + 1.5 * self->mpu_pitch;
-            int back =55 - self-> mpu_pitch;
+            int back =55 - 1.5 * self-> mpu_pitch;
            
       
             if (self->mpu_pitch < -55) {
@@ -228,12 +233,12 @@ main reactor {
             }
 
             if (self->count_imu >= 5) {
-                self->frontPower = 1350;
-                self->rearPower = 1450;
+                self->frontPower = 1500;
+                self->rearPower = 1350;
   
                 lf_set(servos.front_angle, 0);
                 lf_set(servos.rear_angle, 180);
-                lf_set_mode(DONE);
+                lf_set_mode(WALL_SUCTION);
             }
         =}
 
@@ -252,13 +257,133 @@ main reactor {
 
 }
 
-    
-    mode DONE {
-        // reaction(t_mpu) -> servos.front_angle, servos.rear_angle {=
-        //     lf_set(servos.front_angle, front);
-        //     lf_set(servos.rear_angle, back);
-        // =}
+mode WALL_SUCTION {
+    timer wall_transition(3 s)
+
+    reaction(wall_transition) -> reset(WALL_CLIMB), servos.front_angle, servos.rear_angle {=
+        lf_set(servos.front_angle, 70);
+        lf_set(servos.rear_angle, 105);
+        lf_set_mode(WALL_CLIMB);
+    =}
+}
+
+    mode WALL_CLIMB {
+        reaction(encoders.right){= //takes care of the motors 
+            int speed = (encoders.right->value - self->encLast);
+            self->desSpeed = 1;
+            self->err = self->desSpeed - speed;
+            self->sumErr += self->err;
+            if (self->sumErr > 100) {
+                self->sumErr = 100;
+            }else if (self->sumErr < -100) {
+                self->sumErr = -100;
+            }
+            // lf_set(servos.front_angle, (self->sumErr + 130)); 
+            self->frontPower = 1420 + self->err*5 + self->sumErr*3;
+            self->rearPower = 1700 + self->err*5 + self->sumErr*3;
+
+            self->encLast = encoders.right->value;
+            self->wall_height += speed;wall_height
+        =}
+
+
+        reaction(u.left) -> reset(WALL_DOWN) {=
+            if (u.left->value < 0) {
+                
+            } else if (u.left->value <= 7) {
+                lf_set_mode(WALL_DOWN);
+            }
+            
+        =}
+
     }
+
+    mode WALL_DOWN {
+        reaction(encoders.right) -> reset(WALL_FLOOR), servos.front_angle, servos.rear_angle {= //takes care of the motors 
+            int speed = (encoders.right->value - self->encLast);
+            self->desSpeed = -1;
+            self->err = self->desSpeed - speed;
+            self->sumErr += self->err;
+            if (self->sumErr > 100) {
+                self->sumErr = 100;
+            }else if (self->sumErr < -100) {
+                self->sumErr = -100;
+            }
+            // lf_set(servos.front_angle, (self->sumErr + 130)); 
+            self->frontPower = 1370 + self->err*5 + self->sumErr*3;
+            self->rearPower = 1650 + self->err*5 + self->sumErr*3;
+
+            self->encLast = encoders.right->value;
+            self->wall_height += speed;
+            if (self->wall_height < 2) {
+                self->frontPower = 1120;
+                self->rearPower = 1300;
+                lf_set(servos.front_angle, 0);
+                lf_set(servos.rear_angle, 180);
+                lf_set_mode(WALL_FLOOR);
+            }
+        =}
+    }
+
+    mode WALL_FLOOR {
+        reaction(t_mpu) -> reset(RETURN), propeller.front_power, propeller.rear_power, servos.front_angle, servos.rear_angle{= //takes care of the angles 
+            int front = 0;
+            int back = 0;
+           
+      
+            if (self->mpu_pitch > -25) {
+                self->count_imu += 1;
+            } else {
+                    self->count_imu = 0;self->encLast;
+                
+                lf_set(servos.front_angle, front);
+                lf_set(servos.rear_angle, back);
+            }
+
+            if (self->count_imu >= 5) {
+                self->rearPower += 1;
+  
+                lf_set(servos.front_angle, 120);
+                lf_set(servos.rear_angle, 60);
+                lf_set_mode(RETURN);
+            }
+        =}
+    }
+
+    mode RETURN {
+        reaction(encoders.right) -> servos.front_angle, reset(DONE){= //takes care of the motors 
+            int speed = (encoders.right->value - self->encLast);
+            self->desSpeed = -2;
+            self->err = self->desSpeed - speed;
+            self->sumErr += self->err;wall_height
+            if (self->sumErr > 100) {
+                self->sumErr = 100;
+            }else if (self->sumErr < -100) {
+                self->sumErr = -100;
+            }
+            // lf_set(servos.front_angle, (self->sumErr + 130)); 
+            self->frontPower = 1070 + self->err*10 + self->sumErr;
+            self->rearPower = 1350 + self->err*10 + self->sumErr;
+
+            self->encLast = encoders.right->value;
+            self->floor_len += speed;
+
+            if (self->floor_len < 2) {
+                self->frontPower = 1020;
+                self->rearPower = 1300;
+                lf_set(servos.front_angle, 90);
+                lf_set(servos.rear_angle, 90);
+                lf_set_mode(DONE);
+            }
+        =}
+    }
+
+    mode DONE {
+        
+    }
+
+    
+    
     
 
     

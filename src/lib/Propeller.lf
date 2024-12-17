@@ -17,7 +17,7 @@ reactor Propeller {
     state rear_prop: propeller_t*
 
     reaction(trigger) {=
-        self->front_prop = propeller_init(17);
+        self->front_prop = propeller_init(28);
         self->rear_prop = propeller_init(16);
         propeller_arm_seq(self->front_prop, self->rear_prop);
     =}
