@@ -8,7 +8,8 @@
 #define ACCEL_XOUT_H 0x3B
 #define PWR_MGMT_1 0x6B
 #define I2C_BAUDRATE 100000
-
+#define CONFIG_REGISTER 0x1a
+#define DLPF_CFG_VALUE 0x03
 static void mpu6050_write(uint8_t reg, uint8_t data) {
     uint8_t buf[2] = {reg, data};
     i2c_write_blocking(I2C_PORT, MPU6050_ADDR, buf, 2, false);
@@ -30,7 +31,8 @@ mpu6050_t* mpu6050_init(uint8_t sda_pin, uint8_t scl_pin) {
     gpio_pull_up(sda_pin);
     gpio_pull_up(scl_pin);
 
-    mpu6050_write(PWR_MGMT_1, 0x00);
+    mpu6050_write(PWR_MGMT_1, 0x00);    
+    mpu6050_write(CONFIG_REGISTER, DLPF_CFG_VALUE);
     
     mpu6050_t mpu_struct = {
         .ax = 0.0,

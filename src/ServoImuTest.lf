@@ -14,7 +14,7 @@ main reactor {
     mpu = new mpu()
     //servos = new Servos()
 
-    timer t1(0 s, 1 s) // one time timer
+    timer t1(0 s, 500 ms) // one time timer
     timer t2(3 s, 300 ms) 
     // timer t(0, 3000 ms)
 

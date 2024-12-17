@@ -1,23 +1,22 @@
 target C {
-    single-threaded: true,
     files: ["../../robot-lib/"],
     cmake-include: ["../../robot-lib/robot-lib.txt"],
     platform: "RP2040"
 }
 
 preamble {=
-    #include <hc_sr04.h>
+    #include <EncUS.h>
 =}
 
 reactor Ultrasonic {
     input trigger_l: bool
     input trigger_r: bool
+    input start_trig: bool
     // input get_value: bool
     state hc_sr04_left: HC_SR04_t*
     state hc_sr04_right: HC_SR04_t*
     output right: float
     output left: float
-    
 
     reaction(startup) {=
         self->hc_sr04_left = HC_SR04_init(14, 15);

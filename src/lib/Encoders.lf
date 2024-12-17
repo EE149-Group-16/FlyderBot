@@ -6,7 +6,7 @@ target C {
 }
 
 preamble {=
-    #include <encoder.h>
+    #include <EncUS.h>
 =}
 
 reactor Encoders {
@@ -23,6 +23,6 @@ reactor Encoders {
 
     reaction (trigger) -> right, left {=
         lf_set(right, self->encoder1->position);
-        lf_set(left, self->encoder2->position);
+        // lf_set(left, self->encoder2->position);
     =}
 }

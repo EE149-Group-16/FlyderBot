@@ -2,24 +2,47 @@ target C {
     platform: "RP2040",
     // files: ["../../robot-lib"],
     // cmake-include: ["../../robot-lib/robot-lib.txt"],
-    single-threaded: true
+    threads:4
 }
 
 import Encoders from "lib/Encoders.lf"
+import Ultrasonic from "lib/Ultrasonic.lf"
 
 main reactor {
     encoders = new Encoders()
     timer t1(3 s, 2 s) // one time timer
     timer t2(6 s, 4 s) 
-    timer t(0, 500 ms)
+    timer t4(5 s, 1 s) 
+    timer t3(5 s, 1 s) 
+
+    timer t(250 ms, 2000 ms)
+    u = new Ultrasonic()
+    // timer t3(500 ms, 1000 ms)
+    // timer t4(1600 ms, 1000 ms)
 
     state position1: uint16_t
 
     reaction(t) -> encoders.trigger  {=
-          //printf("check\n");
-        lf_set(encoders.trigger, true);
+        //printf("check\n");
+      lf_set(encoders.trigger, true);
 
-    =}
+  =}
+
+
+reaction(t4) -> u.trigger_r {=
+    lf_set(u.trigger_r, true);
+=}
+reaction(t3) -> u.trigger_l  {=
+    lf_set(u.trigger_l, true);
+=}
+
+reaction(u.left) {=
+    printf("left: %2.4f\n", u.left->value);
+=}
+
+reaction(u.right) {=
+    printf("right: %2.4f\n", u.right->value);
+=}
 
     reaction(encoders.right, encoders.left)  {=
        printf("Right Encoder: %d\n", encoders.right->value);

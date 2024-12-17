@@ -10,10 +10,11 @@ add_library(robot
   src/mpu6050.c
 #  src/rgb_leds.c
   src/sh1106.c
-  src/encoder.c
+  # src/encoder.c
   src/servo.c
   src/propeller.c
-  src/hc_sr04.c
+  # src/hc_sr04.c
+  src/EncUS.c
 )
 pico_generate_pio_header(robot
   ${CMAKE_CURRENT_LIST_DIR}/qtr_sensor_counter.pio

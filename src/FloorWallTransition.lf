@@ -2,7 +2,7 @@ target C {
     platform: "RP2040",
     // files: ["../../robot-lib"],
     // cmake-include: ["../../robot-lib/robot-lib.txt"],
-    single-threaded: true
+    // single-threaded: true
 }
 
 import Propeller from "lib/Propeller.lf"
@@ -19,17 +19,17 @@ main reactor {
     encoders = new Encoders()
     timer t(12 s, 3 s)
     timer ptimer(0 s, 1 s);
-    timer t_mpu(1 s, 50 ms) 
+    timer t_mpu(1040 ms, 10 ms) 
     timer tran_timer(1 s, 100 ms) 
 
     timer stop(60 s)
     timer startPropeller0(3 s, 0 ms)
     timer startPropeller(15 s, 100 ms)
 
-    timer t_u1(3000 ms, 200 ms)
-    timer t_u2(3100 ms, 200 ms)
+    timer t_u1(3025 ms, 200 ms)
+    timer t_u2(3125 ms, 200 ms)
 
-    timer t_enc(15 s, 500 ms)
+    timer t_enc(15050 ms, 200 ms)
     // timer stopPropeller(20 s)
 
     state frontPower: uint16_t
@@ -50,6 +50,8 @@ main reactor {
     state sumErr: int
     state err: int
 
+    state count_imu: int
+
     reaction (startup) -> servos.front_angle, servos.rear_angle {=
         self -> frontPower = 1000; // started at 1350 power
         self -> rearPower = 1300;
@@ -58,7 +60,7 @@ main reactor {
         self->encLast = 0;
         self->sumErr = 0;
         self->err = 0;
-
+        self->count_imu = 0;
         lf_set(servos.rear_angle, self->rearAngle);
         lf_set(servos.front_angle, self->frontAngle);
         
@@ -84,6 +86,12 @@ main reactor {
         lf_set(encoders.trigger, true);
 
     =}
+        reaction(ptimer) -> encoders.trigger  {=
+            printf("check\n");
+
+        
+            =}
+        
 
 
     
@@ -96,13 +104,13 @@ main reactor {
     
 
     reaction(startPropeller) -> propeller.front_power, propeller.rear_power {=
-        if (self->frontPower >= 1550 || self->rearPower >= 2100) {
+        if (self->frontPower >= 1500 || self->rearPower >= 1800) {
             self->frontPower =1000 ;
             self->rearPower = 1300;
         }
         lf_set(propeller.front_power, self->frontPower);
         lf_set(propeller.rear_power, self->rearPower);
-        printf("Setting Prop Front power: %d, back power: %d\n", self->frontPower,self->rearPower);
+        // printf("Setting Prop Front power: %d, back power: %d\n", self->frontPower,self->rearPower);
     =}
 
     reaction(mpu.pitch) {= //updating our state variable for roll
@@ -127,27 +135,27 @@ main reactor {
     
     
     mode FLOOR {
-        reaction(ptimer) {=
-            printf("In floor mode\n");
-            printf("mode react front power: %d, back power: %d\n", self->frontPower,self->rearPower);
+        // reaction(ptimer) {=
+        //     printf("In floor mode\n");
+        //     printf("mode react front power: %d, back power: %d\n", self->frontPower,self->rearPower);
 
-        =}
+        // =}
         reaction(t_mpu) -> servos.front_angle, servos.rear_angle{= //takes care of the angles       
             lf_set(servos.front_angle, 65);
             lf_set(servos.rear_angle, 120);
         =}
-        reaction(encoders.right) {= //takes care of the motors 
+        reaction(encoders.right) -> servos.front_angle{= //takes care of the motors 
             self->desSpeed = 2;
             self->err = self->desSpeed - (encoders.right->value - self->encLast);
             self->sumErr += self->err;
-            if (self->sumErr > 50) {
-                self->sumErr = 50;
-            }else if (self->sumErr < -50) {
-                self->sumErr = -50;
+            if (self->sumErr > 100) {
+                self->sumErr = 100;
+            }else if (self->sumErr < -100) {
+                self->sumErr = -100;
             }
-            
-            self->frontPower = 1020 + self->err*20 + self->sumErr*3;
-            self->rearPower = 1300 + self->err*20 + self->sumErr*3;
+            // lf_set(servos.front_angle, (self->sumErr + 130)); 
+            self->frontPower = 1070 + self->err*10 + self->sumErr;
+            self->rearPower = 1350 + self->err*10 + self->sumErr;
 
             self->encLast = encoders.right->value;
         =}
@@ -158,13 +166,12 @@ main reactor {
             
             self->last_pitch = self->mpu_pitch;
         =}
-        reaction(u.left) -> reset(DONE) {=
+        reaction(u.left) -> reset(FLOOR_WALL) {=
             if (u.left->value < 0) {
                 
             } else if (u.left->value <= 7) {
-                lf_set_mode(DONE);
-                self->frontPower = 1020;
-                self->rearPower = 1300;
+                lf_set_mode(FLOOR_WALL);
+                self->rearPower = 1350;
             }
             else if (u.left->value <= 20) {
                 self->frontPower = 1050;
@@ -173,6 +180,7 @@ main reactor {
             //     self->frontPower = 1050;
             //     self->rearPower = 1350;
              }
+             printf("US val: %f\n", u.left->value);
             printf("Front power: %d, back power: %d\n", self->frontPower,self->rearPower);
             //printf("distance: %f\n", u.left->value);
             self->last_pitch = self->mpu_pitch;
@@ -189,23 +197,43 @@ main reactor {
             // printf("distance: %f\n", u.left->value);
             // printf("mpu pitch: %f\n", self->mpu_pitch);
         =}
+
+        reaction(encoders.right) -> servos.front_angle{= //takes care of the motors 
+            self->desSpeed = 1;
+            self->err = self->desSpeed - (encoders.right->value - self->encLast);
+            self->sumErr += self->err;
+            if (self->sumErr > 100) {
+                self->sumErr = 100;
+            }else if (self->sumErr < -100) {
+                self->sumErr = -100;
+            }
+            // lf_set(servos.front_angle, (self->sumErr + 130)); 
+            self->frontPower = 1400 + self->err*10 + self->sumErr*2;
+
+            self->encLast = encoders.right->value;
+        =}
+
         reaction(t_mpu) -> reset(DONE), propeller.front_power, propeller.rear_power, servos.front_angle, servos.rear_angle{= //takes care of the angles 
-            int front = 160 + 2*self->mpu_pitch;
+            int front = 160 + 1.5 * self->mpu_pitch;
             int back =55 - self-> mpu_pitch;
            
       
-            if (self->mpu_pitch < -45) {
-                self->frontPower = 1350;
-                self->rearPower = 1430;
-                lf_set(propeller.front_power, 1350);
+            if (self->mpu_pitch < -55) {
+                self->count_imu += 1;
+            } else {
+                    self->count_imu = 0;
+                
+                lf_set(servos.front_angle, front);
+                lf_set(servos.rear_angle, back);
+            }
 
-                lf_set(propeller.rear_power, 1430);
+            if (self->count_imu >= 5) {
+                self->frontPower = 1350;
+                self->rearPower = 1450;
+  
                 lf_set(servos.front_angle, 0);
                 lf_set(servos.rear_angle, 180);
                 lf_set_mode(DONE);
-            } else {
-            lf_set(servos.front_angle, front);
-            lf_set(servos.rear_angle, back);
             }
         =}
 
