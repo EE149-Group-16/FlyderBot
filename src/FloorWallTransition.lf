@@ -158,7 +158,7 @@ main reactor {
             }else if (self->sumErr < -100) {
                 self->sumErr = -100;
             }
-            // lf_set(servos.front_angle, (self->sumErr + 130)); 
+            lf_set(servos.front_angle, (self->sumErr + 130)); 
             self->frontPower = 1070 + self->err*10 + self->sumErr;
             self->rearPower = 1350 + self->err*10 + self->sumErr;
 
@@ -224,7 +224,7 @@ main reactor {
             int back =55 - 1.5 * self-> mpu_pitch;
            
       
-            if (self->mpu_pitch < -55) {
+            if (self->mpu_pitch < -60) {
                 self->count_imu += 1;
             } else {
                     self->count_imu = 0;
@@ -254,21 +254,22 @@ main reactor {
         //     self->last_pitch = self->mpu_pitch;
         // =}
 
-       
-
 }
 
 mode WALL_SUCTION {
-    timer wall_transition(1 s)
+    timer wall_transition(2 s)
 
     reaction(wall_transition) -> reset(WALL_CLIMB), servos.front_angle, servos.rear_angle {=
-        lf_set(servos.front_angle, 65);
-        lf_set(servos.rear_angle, 125);
+        lf_set(servos.front_angle, 65   );
+        lf_set(servos.rear_angle, 115);
         lf_set_mode(WALL_CLIMB);
     =}
 }
 
     mode WALL_CLIMB {
+        timer climbTime (5 s)
+        timer endTopPause (10 s, 0 s)
+
         reaction(encoders.right){= //takes care of the motors 
             int speed = (encoders.right->value - self->encLast);
             self->desSpeed = 1;
@@ -280,8 +281,8 @@ mode WALL_SUCTION {
                 self->sumErr = -100;
             }
             // lf_set(servos.front_angle, (self->sumErr + 130)); 
-            self->frontPower = 1420 + self->err*5 + self->sumErr*3;
-            self->rearPower = 1700 + self->err*5 + self->sumErr*3;
+            self->frontPower = 1420 + self->err*5 + self->sumErr*2;
+            self->rearPower = 1700 + self->err*5 + self->sumErr*2;
 
             self->encLast = encoders.right->value;
             self->wall_height += speed;
@@ -289,17 +290,28 @@ mode WALL_SUCTION {
 
 
         reaction(u.left) -> reset(WALL_DOWN) {=
-            if (u.left->value < 0) {
-                
-            } else if (u.left->value <= 7) {
+            if (u.left->value < 0) {   
+            } else if (u.left->value <= 13) {
                 lf_set_mode(WALL_DOWN);
             }
-            
         =}
+
+        // reaction(climbTime) {=
+        //     // AT TOP OF WALL, PAUSE FOR 4 SECs
+        //     self->desSpeed = 0;
+        // =}
+
+        // reaction(endTopPause) -> reset(WALL_DOWN) {=
+        //     if (u.left->value < 0) {   
+        //     } else if (u.left->value <= 7) {
+        //         lf_set_mode(WALL_DOWN);
+        //     }
+        // =}
 
     }
 
     mode WALL_DOWN {
+        timer Trans (20 s, 0 s)
         reaction(encoders.right) -> reset(WALL_FLOOR), servos.front_angle, servos.rear_angle {= //takes care of the motors 
             int speed = (encoders.right->value - self->encLast);
             self->desSpeed = -1;
@@ -324,12 +336,21 @@ mode WALL_SUCTION {
                 lf_set_mode(WALL_FLOOR);
             }
         =}
+        reaction(Trans) -> reset(WALL_FLOOR), servos.front_angle, servos.rear_angle {= //takes care of the motors 
+
+                self->frontPower = 1200;
+                self->rearPower = 1320;
+                lf_set(servos.front_angle, 0);
+                lf_set(servos.rear_angle, 180);
+                lf_set_mode(WALL_FLOOR);
+            
+        =}
     }
 
     mode WALL_FLOOR {
 
         reaction(t_enc) {=
-            self->rearPower += 2;
+            self->rearPower += 5;
             self->frontPower = 1400;
         =}
         reaction(t_mpu) -> reset(DONE), propeller.front_power, propeller.rear_power, servos.front_angle, servos.rear_angle{= //takes care of the angles 
