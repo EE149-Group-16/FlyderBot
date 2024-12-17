@@ -95,6 +95,7 @@ main reactor {
         
             =}
         
+        // lf_set(propeller.rear_power, self->rearPower);
 
 
     
@@ -198,10 +199,10 @@ main reactor {
     }
 
     mode FLOOR_WALL {
-        reaction(u.left) {=
-            // printf("distance: %f\n", u.left->value);
-            // printf("mpu pitch: %f\n", self->mpu_pitch);
-        =}
+        // reaction(u.left) {=
+        //     printf("distance: %f\n", u.left->value);
+        //     printf("mpu pitch: %f\n", self->mpu_pitch);
+        // =}
 
         reaction(encoders.right) -> servos.front_angle{= //takes care of the motors 
             self->desSpeed = 1;
@@ -258,10 +259,10 @@ main reactor {
 }
 
 mode WALL_SUCTION {
-    timer wall_transition(3 s)
+    timer wall_transition(1 s)
 
     reaction(wall_transition) -> reset(WALL_CLIMB), servos.front_angle, servos.rear_angle {=
-        lf_set(servos.front_angle, 70);
+        lf_set(servos.front_angle, 75);
         lf_set(servos.rear_angle, 105);
         lf_set_mode(WALL_CLIMB);
     =}
@@ -283,7 +284,7 @@ mode WALL_SUCTION {
             self->rearPower = 1700 + self->err*5 + self->sumErr*3;
 
             self->encLast = encoders.right->value;
-            self->wall_height += speed;wall_height
+            self->wall_height += speed;
         =}
 
 
@@ -310,14 +311,14 @@ mode WALL_SUCTION {
                 self->sumErr = -100;
             }
             // lf_set(servos.front_angle, (self->sumErr + 130)); 
-            self->frontPower = 1370 + self->err*5 + self->sumErr*3;
-            self->rearPower = 1650 + self->err*5 + self->sumErr*3;
+            self->frontPower = 1420 + self->err*5 + self->sumErr*3;
+            self->rearPower = 1700 + self->err*5 + self->sumErr*3;
 
             self->encLast = encoders.right->value;
             self->wall_height += speed;
-            if (self->wall_height < 2) {
-                self->frontPower = 1120;
-                self->rearPower = 1300;
+            if (self->wall_height < 4) {
+                self->frontPower = 1400;
+                self->rearPower = 1360;
                 lf_set(servos.front_angle, 0);
                 lf_set(servos.rear_angle, 180);
                 lf_set_mode(WALL_FLOOR);
@@ -326,12 +327,18 @@ mode WALL_SUCTION {
     }
 
     mode WALL_FLOOR {
-        reaction(t_mpu) -> reset(RETURN), propeller.front_power, propeller.rear_power, servos.front_angle, servos.rear_angle{= //takes care of the angles 
-            int front = 0;
-            int back = 0;
+
+        reaction(t_enc) {=
+            self->rearPower += 2;
+            self->frontPower = 1400;
+        =}
+        reaction(t_mpu) -> reset(DONE), propeller.front_power, propeller.rear_power, servos.front_angle, servos.rear_angle{= //takes care of the angles 
+            int front = 180 + 2*self->mpu_pitch;;
+            int back = 120 + self->mpu_pitch;
            
-      
-            if (self->mpu_pitch > -25) {
+            
+            self->frontPower = 1400;
+            if (self->mpu_pitch > -10) {
                 self->count_imu += 1;
             } else {
                     self->count_imu = 0;self->encLast;
@@ -341,36 +348,9 @@ mode WALL_SUCTION {
             }
 
             if (self->count_imu >= 5) {
-                self->rearPower += 1;
-  
-                lf_set(servos.front_angle, 120);
-                lf_set(servos.rear_angle, 60);
-                lf_set_mode(RETURN);
-            }
-        =}
-    }
-
-    mode RETURN {
-        reaction(encoders.right) -> servos.front_angle, reset(DONE){= //takes care of the motors 
-            int speed = (encoders.right->value - self->encLast);
-            self->desSpeed = -2;
-            self->err = self->desSpeed - speed;
-            self->sumErr += self->err;wall_height
-            if (self->sumErr > 100) {
-                self->sumErr = 100;
-            }else if (self->sumErr < -100) {
-                self->sumErr = -100;
-            }
-            // lf_set(servos.front_angle, (self->sumErr + 130)); 
-            self->frontPower = 1070 + self->err*10 + self->sumErr;
-            self->rearPower = 1350 + self->err*10 + self->sumErr;
-
-            self->encLast = encoders.right->value;
-            self->floor_len += speed;
-
-            if (self->floor_len < 2) {
                 self->frontPower = 1020;
                 self->rearPower = 1300;
+  
                 lf_set(servos.front_angle, 90);
                 lf_set(servos.rear_angle, 90);
                 lf_set_mode(DONE);
