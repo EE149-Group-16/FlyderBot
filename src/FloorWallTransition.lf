@@ -224,7 +224,7 @@ main reactor {
             int back =55 - 1.5 * self-> mpu_pitch;
            
       
-            if (self->mpu_pitch < -55) {
+            if (self->mpu_pitch < -45) {
                 self->count_imu += 1;
             } else {
                     self->count_imu = 0;
@@ -262,8 +262,8 @@ mode WALL_SUCTION {
     timer wall_transition(1 s)
 
     reaction(wall_transition) -> reset(WALL_CLIMB), servos.front_angle, servos.rear_angle {=
-        lf_set(servos.front_angle, 75);
-        lf_set(servos.rear_angle, 105);
+        lf_set(servos.front_angle, 65);
+        lf_set(servos.rear_angle, 125);
         lf_set_mode(WALL_CLIMB);
     =}
 }
@@ -317,8 +317,8 @@ mode WALL_SUCTION {
             self->encLast = encoders.right->value;
             self->wall_height += speed;
             if (self->wall_height < 4) {
-                self->frontPower = 1400;
-                self->rearPower = 1360;
+                self->frontPower = 1200;
+                self->rearPower = 1320;
                 lf_set(servos.front_angle, 0);
                 lf_set(servos.rear_angle, 180);
                 lf_set_mode(WALL_FLOOR);
